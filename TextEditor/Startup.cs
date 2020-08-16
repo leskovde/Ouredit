@@ -67,6 +67,48 @@ namespace TextEditor
 
            var mainWindow = await Electron.WindowManager.CreateWindowAsync(options);
            mainWindow.OnReadyToShow += () => { mainWindow.Show(); };
+
+           var menu = new MenuItem[]
+           {
+               new MenuItem
+               {
+                   Label = "Mock1",
+                   Submenu = new MenuItem[]
+                   {
+                       new MenuItem
+                       {
+                           Label = "SubMock1",
+                           Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
+                       }
+                   }
+               },
+               new MenuItem
+               {
+                   Label = "Mock2",
+                   Submenu = new MenuItem[]
+                   {
+                       new MenuItem
+                       {
+                           Label = "SubMock2",
+                           Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
+                       }
+                   }
+               },
+               new MenuItem
+               {
+                   Label = "Mock3",
+                   Submenu = new MenuItem[]
+                   {
+                       new MenuItem
+                       {
+                           Label = "SubMock3",
+                           Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
+                       }
+                   }
+               }
+           };
+
+           Electron.Menu.SetApplicationMenu(menu);
         }
     }
 }
