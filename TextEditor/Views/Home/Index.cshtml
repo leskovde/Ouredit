@@ -6,4 +6,20 @@
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+    <button id="async-msg">Send an Async message</button>
+    <p id="async-reply"></p>
 </div>
+
+<script>
+    const { ipcRenderer } = require("electron");
+
+    document.getElementById("async-msg").addEventListener("click", () => {
+        ipcRenderer.send("async-msg", 'ping');
+    });
+
+    ipcRenderer.on('asynchronous-reply', (event, arg) => {
+        const message = `Asynchronous message reply: ${arg}`;
+        document.getElementById('async-reply').innerHTML = message;
+    });
+</script>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using ElectronNET.API;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TextEditor.Models;
@@ -20,6 +21,11 @@ namespace TextEditor.Controllers
 
         public IActionResult Index()
         {
+            Electron.IpcMain.On("async-msg", (data) =>
+            {
+                var mainWindow = Electron.WindowManager.BrowserWindows.First();
+                Electron.IpcMain.Send(mainWindow, "asynchronous-reply", "pong");
+            });
             return View();
         }
 
