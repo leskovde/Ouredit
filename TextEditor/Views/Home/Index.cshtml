@@ -1,5 +1,6 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using Components
+@{
+    ViewData["Title"] = "Home Page" + "\n" + MockFunctionality.SayHello();
 }
 
 <div class="text-center">
