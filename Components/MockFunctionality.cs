@@ -4,9 +4,9 @@ namespace Components
 {
     public class MockFunctionality
     {
-        public static string SayHello()
+        public static string GetMockFileName()
         {
-            return "Hello World!";
+            return "MockFileName";
         }
     }
 }
