@@ -1,0 +1,11 @@
+﻿#textBox {
+    width: 95%;
+    height: 460px;
+    border: 3px red solid;
+    padding: 12px;
+    word-wrap: normal;
+    overflow-wrap: normal;
+    white-space: nowrap;
+    overflow-x: scroll;
+    overflow-y: scroll;
+}

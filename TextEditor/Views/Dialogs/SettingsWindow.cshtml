@@ -1,8 +1,7 @@
 ﻿<style>
     body {
         font-family: system, -apple-system, '.SFNSText-Regular', 'SF UI Text', 'Lucida Grande', 'Segoe UI', Ubuntu, Cantarell, sans-serif;
-        color: #fff;
-        background-color: #8aba87;
+        color: #000000;
         text-align: left;
         font-size: 12px;
     }
@@ -57,48 +56,45 @@
     .active {
         display: block;
     }
+
+    .filler {
+        border: 5px solid red;
+        width: 80%;
+        height: 300px;
+        position: center;
+    }
 </style>
 
-<ul class="treeview">
-    <li>
-        <span class="caret">General</span>
-        <ul class="nested">
-            <li>Water</li>
-            <li>Coffee</li>
-            <li>
-                <span class="caret">Tea</span>
-                <ul class="nested">
-                    <li>Black Tea</li>
-                    <li>White Tea</li>
-                    <li>
-                        <span class="caret">Green Tea</span>
-                        <ul class="nested">
-                            <li>Sencha</li>
-                            <li>Gyokuro</li>
-                            <li>Matcha</li>
-                            <li>Pi Lo Chun</li>
-                        </ul>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-    </li>
-    <li>
-        <span class="caret">Editing</span>
-    </li>
-    <li>
-        <span class="caret">New Document</span>
-    </li>
-    <li>
-        <span class="caret">Default Directory</span>
-    </li>
-    <li>
-        <span class="caret">Recent Files History</span>
-    </li>
-    <li>
-        <span class="caret">Highlighting</span>
-    </li>
-</ul>
+<body class="index">
+    <div class="container">
+        <h1>General</h1>
+        <div class="filler"></div>
+    
+        <h1>Editing</h1>
+        <div class="filler"></div>
+    
+        <h1>New Document</h1>
+        <div class="filler"></div>
+    
+        <h1>Default Directory</h1>
+        <div class="filler"></div>
+    
+        <h1>Recent Files History</h1>
+        <div class="filler"></div>
+    
+        <h1>Highlighting</h1>
+        <div class="filler"></div>
+    </div>
+</body>
+
+<footer class="footer">
+    <div class="container">
+        <button>Reset</button>
+        <button>Save</button>
+        <button>Cancel</button>
+    </div>
+</footer>
+
 <a id="close" href="javascript:window.close()">Close this Window</a>
 
 <script>
@@ -106,9 +102,9 @@
     var i;
 
     for (i = 0; i < toggler.length; i++) {
-        toggler[i].addEventListener("click", function() {
+        toggler[i].addEventListener("click", function () {
             this.parentElement.querySelector(".nested").classList.toggle("active");
             this.classList.toggle("caret-down");
         });
-    } 
+    }
 </script>

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Builder;
@@ -64,7 +65,7 @@ namespace TextEditor
            var mainWindow = await Electron.WindowManager.CreateWindowAsync(options);
            mainWindow.OnReadyToShow += () => { mainWindow.Show(); };
 
-           var menu = new MenuItem[]
+           var indexMenu = new MenuItem[]
            {
                new MenuItem
                {
@@ -278,14 +279,15 @@ namespace TextEditor
                                    SkipTaskbar = true,
                                };
 
-                               await Electron.WindowManager.CreateWindowAsync(path);
+                               var settingsWindow = await Electron.WindowManager.CreateWindowAsync(options, path);
+                               settingsWindow.RemoveMenu();
                            }
                        }
                    }
                }
            };
 
-           Electron.Menu.SetApplicationMenu(menu);
+           Electron.Menu.SetApplicationMenu(indexMenu);
         }
     }
 }

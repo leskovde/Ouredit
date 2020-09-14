@@ -47,7 +47,7 @@ namespace Components.Controllers
         /// Executes a single command and adds it to the command history.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="command"></param>
+        /// <param name="command">The command object whose execute methods should be called.</param>
         public void Execute<T>(T command) where T : ICommand
         {
             command.Execute();
