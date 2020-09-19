@@ -10,7 +10,7 @@ namespace Components.Models
     {
         public LazyBuffer(File file) : base(file) { }
 
-        public override void UpdateCursorPosition()
+        public override void UpdateCursorPosition(int numberOfCharactersFromStart)
         {
             throw new NotImplementedException();
         }
@@ -46,6 +46,11 @@ namespace Components.Models
         }
 
         public override void DumpBufferToFile(File file)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GetBufferContent()
         {
             throw new NotImplementedException();
         }

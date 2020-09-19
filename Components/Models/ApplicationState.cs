@@ -11,19 +11,31 @@ namespace Components.Models
     /// Stores the current state of the text editor.
     /// </summary>
     [Leskovar]
-    internal class ApplicationState
+    public class ApplicationState
     {
+        private static ApplicationState _instance;
+        private static readonly object Mutex = new object();
         private readonly List<Buffer> _fileBuffers;
         public FileHandler FileHandlerInstance { get; }
 
-        public ApplicationState(List<string> filePaths)
+        private ApplicationState()
         {
             _fileBuffers = new List<Buffer>();
             FileHandlerInstance = new FileHandler(this);
+        }
 
-            foreach (var filePath in filePaths)
+        /// <summary>
+        /// Makes sure only one instance is ever created.
+        /// </summary>
+        /// <returns>Reference to the singleton instance.</returns>
+        public static ApplicationState Instance
+        {
+            get
             {
-                FileHandlerInstance.OpenFile(filePath);
+                lock (Mutex)
+                {
+                    return _instance ??= new ApplicationState();
+                }
             }
         }
 
@@ -31,17 +43,32 @@ namespace Components.Models
         /// Performs basic file handling tasks such as opening, saving and closing a given file while updating the state of the application.
         /// </summary>
         [Leskovar]
-        internal class FileHandler
+        public class FileHandler
         {
             private readonly ApplicationState _applicationState;
 
-            public FileHandler(ApplicationState applicationState)
+            internal FileHandler(ApplicationState applicationState)
             {
                 _applicationState = applicationState;
             }
 
             /// <summary>
+            /// Offers the same functionality as Open file but with a file existence check.
+            /// </summary>
+            /// <param name="filePath">The name of the file to be created.</param>
+            public void NewFile(string filePath)
+            {
+                if (new FileInfo(filePath).Exists)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                OpenFile(filePath);
+            }
+
+            /// <summary>
             /// Attempts to open a given file and adds it to the application state.
+            /// Side effect: In case the file does not exist, the method creates a new file.
             /// </summary>
             /// <param name="filePath">The file to be opened.</param>
             public void OpenFile(string filePath)
@@ -54,23 +81,41 @@ namespace Components.Models
                 var type = BufferType.Immediate;
 
                 // Files larger than 20 MB are automatically set to the lazy buffering mode.
-                if (new FileInfo(filePath).Length > 20 * 1024 * 1024)
+                var fileInfo = new FileInfo(filePath);
+
+                if (fileInfo.Exists && fileInfo.Length > 20 * 1024 * 1024)
                 {
                     type = BufferType.Lazy;
                 }
 
-                _applicationState._fileBuffers.Add(BufferFactoryGetter.GetBuffer(type, new File(filePath)));
+                _applicationState._fileBuffers.Add(BufferInstantiator.GetBuffer(type, new File(filePath)));
             }
 
             /// <summary>
             /// Saves the user changes to the file.
             /// </summary>
-            /// <param name="filePath"></param>
-            public void SaveFile(string filePath)
+            /// <param name="currentFilePath">The file path of the file whose content will be saved.</param>
+            /// <param name="destinationFilePath">The destination to which the file fill be saved.</param>
+            public void SaveFile(string currentFilePath, string destinationFilePath)
             {
-                var fileBuffer = _applicationState._fileBuffers.First(x => x.FileInstance.FilePath == filePath);
-                
-                // TODO: Add the 'save' logic.
+                var currentFileBuffer = GetFileBuffer(currentFilePath);
+
+                if (currentFilePath == destinationFilePath)
+                {
+                    currentFileBuffer.DumpBufferToCurrentFile();
+                }
+                else
+                {
+                    var destinationFileBuffer = _applicationState._fileBuffers.FirstOrDefault(x => x.FileInstance.FilePath == destinationFilePath);
+
+                    if (destinationFileBuffer == default)
+                    {
+                        OpenFile(destinationFilePath);
+                        destinationFileBuffer = GetFileBuffer(destinationFilePath);
+                    }
+
+                    currentFileBuffer.DumpBufferToFile(destinationFileBuffer.FileInstance);
+                }
             }
 
             /// <summary>
@@ -79,15 +124,41 @@ namespace Components.Models
             /// <param name="filePath"></param>
             public void CloseFile(string filePath)
             {
-                if (!_applicationState._fileBuffers.Exists(x => x.FileInstance.FilePath != filePath))
+                var fileBuffer = _applicationState._fileBuffers.FirstOrDefault(x => x.FileInstance.FilePath == filePath);
+
+                if (fileBuffer == default)
+                {
+                    throw new InvalidOperationException();
+                }
+                
+                fileBuffer.FileInstance.Dispose();
+                _applicationState._fileBuffers.Remove(fileBuffer);
+            }
+
+            /// <summary>
+            /// Searches through all open files to get the underlying data structure handler for a given file.
+            /// </summary>
+            /// <param name="filePath">The file path to the searched file.</param>
+            /// <returns>The Buffer object that contains the text of a given file.</returns>
+            public Buffer GetFileBuffer(string filePath)
+            {
+                var fileBuffer = _applicationState._fileBuffers.FirstOrDefault(x => x.FileInstance.FilePath == filePath);
+
+                if (fileBuffer == default)
                 {
                     throw new InvalidOperationException();
                 }
 
-                var fileBuffer = _applicationState._fileBuffers.First(x => x.FileInstance.FilePath == filePath);
-                
-                fileBuffer.FileInstance.Dispose();
-                _applicationState._fileBuffers.Remove(fileBuffer);
+                return fileBuffer;
+            }
+
+            /// <summary>
+            /// Creates a collection of all opened files. The collection contains file names (i. e. not full paths, just names with extensions).
+            /// </summary>
+            /// <returns></returns>
+            public List<string> GetOpenFileNames()
+            {
+                return _applicationState._fileBuffers.Select(x => x.FileInstance.FileName).ToList();
             }
         }
     }

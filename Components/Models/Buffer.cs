@@ -4,38 +4,35 @@ using System.Text;
 
 namespace Components.Models
 {
+    /// <summary>
+    /// A wrapper object for the text keeping data structure and an interface for operating with its content.
+    /// </summary>
     [Leskovar]
-    enum BufferType
-    {
-        Immediate,
-        Lazy
-    }
-
-    [Leskovar]
-    internal abstract class Buffer
+    public abstract class Buffer : IDisposable
     {
         public File FileInstance { get; }
-        protected GapBuffer _storage;
-
+        protected GapBuffer Storage;
+        protected static object Mutex = new object();
+        
         // Position in file.
-        protected ulong _linePosition;
-        protected ulong _byteOffset;
+        protected ulong LinePosition;
+        protected ulong ByteOffset;
 
         // Position in buffer.
-        protected int _bufferPosition;
+        protected int BufferPosition;
 
         protected Buffer(File file)
         {
             FileInstance = file;
-            _storage = new GapBuffer();
+            Storage = new GapBuffer();
             
-            _linePosition = 0;
-            _byteOffset = 0;
+            LinePosition = 0;
+            ByteOffset = 0;
 
-            _bufferPosition = 0;
+            BufferPosition = 0;
         }
 
-        public abstract void UpdateCursorPosition();
+        public abstract void UpdateCursorPosition(int numberOfCharactersFromStart); // The argument is mocked for test purposes.
         public abstract void InsertAtCursor(char content);
         public abstract void InsertAtCursor(string content);
         public abstract void DeleteAtCursorLeft(int numberOfCharacters);
@@ -43,5 +40,20 @@ namespace Components.Models
         public abstract void FillBufferFromFile();
         public abstract void DumpBufferToCurrentFile();
         public abstract void DumpBufferToFile(File file);
+        public abstract string GetBufferContent();
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                FileInstance?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

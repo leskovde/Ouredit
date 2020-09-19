@@ -8,16 +8,17 @@ namespace Components.Models
     /// A wrapper object for the text keeping data structure. Keeps the entire text file in the memory.
     /// </summary>
     [Leskovar]
-    internal class ImmediateBuffer : Buffer
+    public class ImmediateBuffer : Buffer
     {
         //private const int _blockSize = 4096 * 1024;
 
         public ImmediateBuffer(File file) : base(file) { }
 
         // TODO: Create an abstraction for the cursor OR get position info in any other way.
-        public override void UpdateCursorPosition()
+        public override void UpdateCursorPosition(int numberOfCharactersFromStart)
         {
-            throw new NotImplementedException();
+            // MOCK for test purposes.
+            BufferPosition = numberOfCharactersFromStart;
         }
 
         /// <summary>
@@ -26,8 +27,11 @@ namespace Components.Models
         /// <param name="content">The character to be inserted.</param>
         public override void InsertAtCursor(char content)
         {
-            _storage.Insert(content, _bufferPosition);
-            _bufferPosition++;
+            lock (Mutex)
+            {
+                Storage.Insert(content, BufferPosition);
+                BufferPosition++;
+            }
         }
 
         /// <summary>
@@ -36,8 +40,11 @@ namespace Components.Models
         /// <param name="content">The string to be inserted.</param>
         public override void InsertAtCursor(string content)
         {
-            _storage.Insert(content, _bufferPosition);
-            _bufferPosition += content.Length;
+            lock (Mutex)
+            {
+                Storage.Insert(content, BufferPosition);
+                BufferPosition += content.Length;
+            }
         }
 
         /// <summary>
@@ -46,8 +53,11 @@ namespace Components.Models
         /// <param name="numberOfCharacters">The number of characters to be removed.</param>
         public override void DeleteAtCursorLeft(int numberOfCharacters)
         {
-            _storage.Delete(_bufferPosition - numberOfCharacters, _bufferPosition);
-            _bufferPosition -= numberOfCharacters;
+            lock (Mutex)
+            {
+                Storage.Delete(BufferPosition - numberOfCharacters, BufferPosition);
+                BufferPosition -= numberOfCharacters;
+            }
         }
 
         /// <summary>
@@ -56,7 +66,10 @@ namespace Components.Models
         /// <param name="numberOfCharacters">The number of characters to be removed.</param>
         public override void DeleteAtCursorRight(int numberOfCharacters)
         {
-            _storage.Delete(_bufferPosition, _bufferPosition + numberOfCharacters);
+            lock (Mutex)
+            {
+                Storage.Delete(BufferPosition, BufferPosition + numberOfCharacters);
+            }
         }
 
         /// <summary>
@@ -64,22 +77,24 @@ namespace Components.Models
         /// </summary>
         public override void FillBufferFromFile()
         {
-            if (_storage.GetLength() > 0)
+            lock (Mutex)
             {
-                _storage.Delete(0, _storage.GetLength() - 1);
+                if (Storage.GetLength() > 0)
+                {
+                    Storage.Delete(0, Storage.GetLength() - 1);
+                }
+
+                /*
+                for (var i = 0; i <= _file.FileSize / blockSize; i++)
+                {
+                    var fileContent = _file.ReadFromFile(i * blockSize, blockSize); 
+                    _storage.Insert(fileContent, i * blockSize);
+                }
+                */
+
+                var fileContent = FileInstance.ReadFromFile(0, (int)FileInstance.FileSize);
+                Storage.Insert(fileContent, 0);
             }
-
-            /*
-            for (var i = 0; i <= _file.FileSize / blockSize; i++)
-            {
-                var fileContent = _file.ReadFromFile(i * blockSize, blockSize); 
-                _storage.Insert(fileContent, i * blockSize);
-            }
-            */
-
-            var fileContent = FileInstance.ReadFromFile(0, (int)FileInstance.FileSize);
-            _storage.Insert(fileContent, 0);
-
         }
 
         /// <summary>
@@ -87,7 +102,13 @@ namespace Components.Models
         /// </summary>
         public override void DumpBufferToCurrentFile()
         {
-            var bufferContent = _storage.GetText(0, _storage.GetLength() - 1);
+            string bufferContent;
+
+            lock (Mutex)
+            { 
+                bufferContent = Storage.GetText(0, Storage.GetLength() - 1);
+            }
+
             FileInstance.WriteToFile(0, bufferContent);
         }
 
@@ -96,8 +117,30 @@ namespace Components.Models
         /// </summary>
         public override void DumpBufferToFile(File file)
         {
-            var bufferContent = _storage.GetText(0, _storage.GetLength() - 1);
+            string bufferContent;
+
+            lock (Mutex)
+            {
+                bufferContent = Storage.GetText(0, Storage.GetLength() - 1);
+            }
+
             file.WriteToFile(0, bufferContent);
+        }
+
+        /// <summary>
+        /// Gets the entire text stored in the buffer.
+        /// </summary>
+        /// <returns>A string representation of the text stored in the buffer.</returns>
+        public override string GetBufferContent()
+        {
+            string content;
+
+            lock (Mutex)
+            {
+                content = Storage.GetText(0, Storage.GetLength() - 1);
+            }
+
+            return content;
         }
     }
 }
