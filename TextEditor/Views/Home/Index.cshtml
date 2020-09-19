@@ -1,5 +1,6 @@
 ﻿@using Components
 @{
+    // TODO: The title should be changed to the currently selected file.
     ViewData["Title"] = MockFunctionality.GetMockFileName();
 }
 
@@ -7,35 +8,31 @@
 
 <body class="index">
     <div class="container">
-        <div id="textBox" contenteditable="true">
-            <p>Lorem ipsum</p>
+        <div id="files-ribbon">
+            <!--
+            Print all file names kept in the application state.
+            ! This action is only performed once. For dynamic file tab changes use the functions
+            and ipc channels provided in site.js !
+        -->
+            @using Components.Models
+            @{
+                var fileNames = ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames();
+
+                foreach (var name in fileNames)
+                {
+                    <button class="file-tab" onclick="changeToSelected(this)">@name</button>
+                }
+            }
+        </div>
+        <div id="text-box-refresh">
+            @Html.Partial("_IndexTextBox")
         </div>
     </div>
 </body>
 
 <footer class="footer">
     <div class="container">
-        Current position: 1:1 <br />
-        Character count: 0 Word count: 0
+        Ln 1, Col 1 <br />
+        Characters: 0, Words: 0
     </div>
 </footer>
-
-<!--
-<div class="text-center">
-    <button id="async-msg">Send an Async message</button>
-    <p id="async-reply"></p>
-</div>
-
-<script>
-    const { ipcRenderer } = require("electron");
-
-    document.getElementById("async-msg").addEventListener("click", () => {
-        ipcRenderer.send("async-msg", 'ping');
-    });
-
-    ipcRenderer.on('asynchronous-reply', (event, arg) => {
-        const message = `Asynchronous message reply: ${arg}`;
-        document.getElementById('async-reply').innerHTML = message;
-    });
-</script>
--->

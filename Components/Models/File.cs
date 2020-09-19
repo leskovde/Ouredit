@@ -1,34 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
-using Components.Models;
-using Buffer = Components.Models.Buffer;
 
-namespace Components
+namespace Components.Models
 {
     /// <summary>
     /// An abstraction for a single opened file. Holds data needed for the UI and supports basic IO operations.
     /// </summary>
     [Leskovar]
-    internal class File : IDisposable
+    public class File : IDisposable
     {
         public string FileName { get; }
         public string FilePath { get; }
         public long FileSize { get; private set; }
+        public LineEndings EndOfLineCharacter { get; private set; }
+        
+        /// <summary>
+        /// Input encoding represents the encoding in which the file on the disc is interpreted when being read.
+        /// </summary>
+        public Encoding InputEncoding { get; private set; }
+        
+        /// <summary>
+        /// Output encoding represents the encoding in which the file will be dumped to the disc upon saving it.
+        /// </summary>
+        public Encoding OutputEncoding { get; private set; }
 
         private static readonly object Mutex = new object();
         private readonly FileStream _fileStream;
-        private readonly Encoding _encoding; 
 
         public File(string filePath)
         {
+            _fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+
             FileName = Path.GetFileName(filePath);
             FilePath = filePath;
-            FileSize = new FileInfo(filePath).Length;
 
-            _fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-            _encoding = GetEncoding(filePath);
+            var fileInfo = new FileInfo(filePath);
+            
+            if (fileInfo.Exists && fileInfo.Length > 0)
+            {
+                FileSize = fileInfo.Length;
+                InputEncoding = GetEncodingFromMetadata(filePath);
+            }
+            else
+            {
+                FileSize = 0;
+                InputEncoding = Encoding.UTF8;
+            }
+
+            OutputEncoding = InputEncoding;
         }
 
         /// <summary>
@@ -46,7 +67,13 @@ namespace Components
                 }
             }
 
-            var byteArray = _encoding.GetBytes(content);
+            var byteArray = InputEncoding.GetBytes(content);
+
+            if (byteOffset == 0 && InputEncoding is UTF7Encoding)
+            {
+                // UTF-7 does not have a BOM by default in C#. Add the BOM.
+                byteArray = new byte[] { 0x2b, 0x2f, 0x76, 0x38 }.Concat(byteArray).ToArray();
+            }
 
             lock (Mutex)
             {
@@ -73,25 +100,81 @@ namespace Components
 
             var byteArray = new byte[byteCount];
 
+            if (byteOffset == 0 && InputEncoding is UTF7Encoding)
+            {
+                // UTF-7 does not expect a BOM by default in C#. Skip the BOM.
+                byteOffset = 4;
+            }
+
             lock (Mutex)
             {
                 _fileStream.Seek(byteOffset, SeekOrigin.Begin);
                 _fileStream.Read(byteArray, 0, byteCount);
             }
 
-            return _encoding.GetString(byteArray);
+            return InputEncoding.GetString(byteArray);
         }
 
         /// <summary>
         /// Sets the file size to a new value.
         /// </summary>
         /// <param name="newFileSize">File size in bytes.</param>
-        public void UpdateFileSize(long newFileSize)
+        public void SetFileSize(long newFileSize)
         {
             lock (Mutex)
             {
                 FileSize = newFileSize;
             }
+        }
+
+        /// <summary>
+        /// Substitutes the current line ending character for a valid given one.
+        /// </summary>
+        /// <param name="lineEndings">The type of line ending to which the file will be changed.</param>
+        public void SetLineEndings(LineEndings lineEndings)
+        {
+            var previousEndOfLineCharacter = EndOfLineCharacter;
+            EndOfLineCharacter = lineEndings;
+
+            // TODO: Implement the substitution logic via search (or keep a table of all EOL positions).
+        }
+
+        /// <summary>
+        /// Sets the encoding in which the file will be interpreted upon reading it from the disc.
+        /// To see a change in the representation, the content needs to be read again.
+        /// </summary>
+        /// <param name="encoding">The System.Text.Encoding object representing the given input encoding.</param>
+        public void SetInputEncoding(Encoding encoding)
+        {
+            InputEncoding = encoding;
+        }
+
+        /// <summary>
+        /// Sets the encoding in which the file will be interpreted upon reading it from the disc.
+        /// To see a change in the representation, the content needs to be read again.
+        /// </summary>
+        /// <param name="type">The given type of input encoding.</param>
+        public void SetInputEncoding(EncodingType type)
+        {
+            InputEncoding = Encodings.GetEncoding(type);
+        }
+
+        /// <summary>
+        /// Sets the encoding in which the file will be saved upon dumping it to the disc.
+        /// </summary>
+        /// <param name="encoding">The System.Text.Encoding object representing the given output encoding.</param>
+        public void SetOutputEncoding(Encoding encoding)
+        {
+            OutputEncoding = encoding;
+        }
+
+        /// <summary>
+        /// Sets the encoding in which the file will be saved upon dumping it to the disc.
+        /// </summary>
+        /// <param name="type">The given type of output encoding.</param>
+        public void SetOutputEncoding(EncodingType type)
+        {
+            OutputEncoding = Encodings.GetEncoding(type);
         }
 
         public void Dispose()
@@ -107,7 +190,7 @@ namespace Components
         /// </summary>
         /// <param name="filePath">The file from which the encoding should be taken.</param>
         /// <returns>A System.Text.Encoding object according to the BOM.</returns>
-        private Encoding GetEncoding(string filePath)
+        private Encoding GetEncodingFromMetadata(string filePath)
         {
             // Read the BOM
             var bom = new byte[4];

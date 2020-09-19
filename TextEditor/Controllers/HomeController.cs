@@ -21,17 +21,13 @@ namespace TextEditor.Controllers
 
         public IActionResult Index()
         {
-            Electron.IpcMain.On("async-msg", (data) =>
-            {
-                var mainWindow = Electron.WindowManager.BrowserWindows.First();
-                Electron.IpcMain.Send(mainWindow, "asynchronous-reply", "pong");
-            });
             return View();
         }
 
-        public IActionResult Privacy()
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult _IndexTextBox()
         {
-            return View();
+            return PartialView("_IndexTextBox");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

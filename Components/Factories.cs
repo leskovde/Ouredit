@@ -34,7 +34,7 @@ namespace Components
     /// A container holding a table of BufferFactories.
     /// </summary>
     [Leskovar]
-    internal static class BufferFactoryGetter
+    internal static class BufferInstantiator
     {
         private static readonly Dictionary<BufferType, BufferFactory> Factories = new Dictionary<BufferType, BufferFactory>
             {
