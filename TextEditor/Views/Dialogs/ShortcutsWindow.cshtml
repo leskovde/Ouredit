@@ -1,0 +1,46 @@
+﻿@using Components.Controllers;
+<header>
+    <h4>Change Shortcuts</h4>
+</header>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    Command
+                </th>
+                <th>
+                    current Shortcut
+                </th>
+                <th>
+                    New Shortcut
+                </th>
+            </tr>
+        </thead>
+       <tbody>
+           @*@foreach(var command )
+           <tr>
+               <td id="@id"></td>
+           </tr>*@
+           <tr>
+               <td></td>
+           </tr>
+           <tr>
+               <td>
+                   <input type="text"/>
+               </td>
+           </tr>
+       </tbody>
+    </table>
+</body>
+<footer>
+    <button type="button">Change</button>
+</footer>
+@{
+    private int id = 0;
+
+    private void IdAdd() => id++;
+
+
+}
+

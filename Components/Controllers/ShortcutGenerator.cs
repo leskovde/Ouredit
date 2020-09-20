@@ -29,35 +29,19 @@ namespace Components.Controllers
         /// <param name="data"></param>
         /// <returns></returns>
         private static string SerializeToFile<T>(T data) => JsonSerializer.Serialize<T>(data, new JsonSerializerOptions { WriteIndented = true, });
-        
-        /// <summary>
-        /// Rewrites a shortcut for a specific command in commands.json file.
-        /// </summary>
-        /// <param name="command"></param>
-        /// <param name="newShortcut"></param>
-        /// <returns></returns>
-        public bool ChangeShortcut(string command, string newShortcut)
+
+        public async Task<Dictionary<string, string>> GetCurrentCommandListAsync()
         {
             if (!System.IO.File.Exists(JSONFilePath))
             {
                 string content;
                 using (StreamReader sr = new StreamReader(JSONFilePath))
                 {
-                    content = sr.ReadToEnd();
+                    content = await sr.ReadToEndAsync();
                 }
-                if (EnsureUnambiguityAsync(content, newShortcut))
-                {
-                    Dictionary<string, string> commandList = JsonSerializer.Deserialize<Dictionary<string, string>>(content);
-                    if (commandList.ContainsValue(command))
-                    {
-                        commandList[command] = newShortcut;
-                        System.IO.File.WriteAllText(JSONFilePath, SerializeToFile(commandList));
-                        return true;
-                    }
-                }
-                return false;
+                return JsonSerializer.Deserialize<Dictionary<string, string>>(content);
             }
-            return false;
+            return new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -68,31 +52,22 @@ namespace Components.Controllers
         /// <returns></returns>
         public async Task<bool> ChangeShortcutAsync(string command, string newShortcut)
         {
-            if (!System.IO.File.Exists(JSONFilePath))
+            Dictionary<string, string> commandList = await GetCurrentCommandListAsync();
+            if (EnsureUnambiguityAsync(commandList, newShortcut))
             {
-                string content;
-                using (StreamReader sr = new StreamReader(JSONFilePath))
+                if (commandList.ContainsValue(command))
                 {
-                    content = await sr.ReadToEndAsync();
+                    commandList[command] = newShortcut;
+                    await System.IO.File.WriteAllTextAsync(JSONFilePath, SerializeToFile(commandList));
+                    return true;
                 }
-                if (EnsureUnambiguityAsync(content, newShortcut))
-                {
-                    Dictionary<string, string> commandList = JsonSerializer.Deserialize<Dictionary<string, string>>(content);
-                    if (commandList.ContainsValue(command))
-                    {
-                        commandList[command] = newShortcut;
-                        await System.IO.File.WriteAllTextAsync(JSONFilePath, SerializeToFile(commandList));
-                        return true;
-                    }
-                }
-                return false;
             }
             return false;
         }
 
-        private bool EnsureUnambiguityAsync(string content, string newShortcut)
+        private bool EnsureUnambiguityAsync(Dictionary<string, string> commandList, string newShortcut)
         {
-            if (content.Contains(newShortcut))
+            if (commandList.ContainsKey(newShortcut))
             {
                 return false;
             }

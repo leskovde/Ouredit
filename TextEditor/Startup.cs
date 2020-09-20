@@ -65,8 +65,8 @@ namespace TextEditor
            var mainWindow = await Electron.WindowManager.CreateWindowAsync(options);
            mainWindow.OnReadyToShow += () => { mainWindow.Show(); };
 
-           var indexMenu = new MenuItem[]
-           {
+            var indexMenu = new MenuItem[]
+            {
                new MenuItem
                {
                    Label = "File",
@@ -284,6 +284,23 @@ namespace TextEditor
                            }
                        }
                    }
+               },
+               new MenuItem
+               {
+                   Label = "Shortcuts",
+                   Click = async () =>
+                           {
+                               string path = $"http://localhost:{BridgeSettings.WebPort}/dialogs/shortcutswindow";
+
+                               var options = new BrowserWindowOptions
+                               {
+                                   SkipTaskbar = true,
+                               };
+
+                               var settingsWindow = await Electron.WindowManager.CreateWindowAsync(options, path);
+                               settingsWindow.RemoveMenu();
+                           }
+
                }
            };
 
