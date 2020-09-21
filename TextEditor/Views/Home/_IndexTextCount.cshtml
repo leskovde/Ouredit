@@ -5,8 +5,16 @@
 <link rel="stylesheet" href="~/css/index.css" />
 
 @{
-    var buffer = Components.Models.ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(MenuActions.CurrentFileName);
+    Components.Models.Buffer buffer;
+    if (MenuActions.CurrentFileName == "Mock")
+    {
+        buffer = null;
+    }
+    else
+    {
+        buffer = Components.Models.ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(MenuActions.CurrentFileName);
+    }
 }
 
-        Characters: @buffer.Counter.CharacterCount, Words: @buffer.Counter.WordCount, Lines: @buffer.Counter.LineCount
+        Characters: @buffer?.Counter.CharacterCount, Words: @buffer?.Counter.WordCount, Lines: @buffer?.Counter.LineCount
 
