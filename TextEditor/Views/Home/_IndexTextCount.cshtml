@@ -1,0 +1,12 @@
+﻿@*
+    Current character, word and line counts.
+*@
+
+<link rel="stylesheet" href="~/css/index.css" />
+
+@{
+    var buffer = Components.Models.ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(MenuActions.CurrentFileName);
+}
+
+        Characters: @buffer.Counter.CharacterCount, Words: @buffer.Counter.WordCount, Lines: @buffer.Counter.LineCount
+
