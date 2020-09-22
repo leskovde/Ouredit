@@ -30,6 +30,7 @@ namespace Components.Models
             lock (Mutex)
             {
                 Storage.Insert(content, BufferPosition);
+                Counter.UpdateCountsAdd(content);
                 BufferPosition++;
             }
         }
@@ -43,6 +44,7 @@ namespace Components.Models
             lock (Mutex)
             {
                 Storage.Insert(content, BufferPosition);
+                Counter.UpdateCountsAdd(content);
                 BufferPosition += content.Length;
             }
         }
@@ -55,7 +57,9 @@ namespace Components.Models
         {
             lock (Mutex)
             {
+                var content = Storage.GetText(BufferPosition - numberOfCharacters, BufferPosition);
                 Storage.Delete(BufferPosition - numberOfCharacters, BufferPosition);
+                Counter.UpdateCountsRemove(content);
                 BufferPosition -= numberOfCharacters;
             }
         }
@@ -68,7 +72,9 @@ namespace Components.Models
         {
             lock (Mutex)
             {
+                var content = Storage.GetText(BufferPosition, BufferPosition + numberOfCharacters);
                 Storage.Delete(BufferPosition, BufferPosition + numberOfCharacters);
+                Counter.UpdateCountsRemove(content);
             }
         }
 
@@ -94,6 +100,7 @@ namespace Components.Models
 
                 var fileContent = FileInstance.ReadFromFile(0, (int)FileInstance.FileSize);
                 Storage.Insert(fileContent, 0);
+                Counter.CountFileContent(this);
             }
         }
 

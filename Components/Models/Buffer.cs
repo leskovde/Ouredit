@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Components.Controllers;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,6 +12,7 @@ namespace Components.Models
     public abstract class Buffer : IDisposable
     {
         public File FileInstance { get; }
+        public TextCounter Counter { get; }
         protected GapBuffer Storage;
         protected static object Mutex = new object();
         
