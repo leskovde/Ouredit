@@ -1,0 +1,12 @@
+﻿@*
+    Current file content
+*@
+
+<div id="text-box" contenteditable="true">
+    Content of the file @CurrentFileName
+</div>
+
+@code{
+    [Parameter]
+    public string CurrentFileName { get; set; }
+}

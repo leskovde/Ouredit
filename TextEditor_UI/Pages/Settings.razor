@@ -1,0 +1,51 @@
+﻿@page "/settings"
+@using OurTextEditor.Component; 
+
+<div class="sidebar">
+</div>
+
+<div class="main">
+    <div class="content px-4">
+        <General />
+    </div>
+</div>
+
+@*<body class="index">
+    <div class="container">
+       
+
+
+        <h1>Editing</h1>
+        <div class="filler"></div>
+
+        <h1>New Document</h1>
+        <div class="filler"></div>
+
+        <h1>Default Directory</h1>
+        <div class="filler"></div>
+
+        <h1>Recent Files History</h1>
+        <div class="filler"></div>
+
+        <h1>Highlighting</h1>
+        <div class="filler"></div>
+    </div>
+</body>*@
+
+<footer class="footer">
+    <div class="container">
+        <button>Reset</button>
+        <button>Save</button>
+        <button>Cancel</button>
+    </div>
+</footer>
+
+<a id="close" href="javascript:window.close()">Close this Window</a>
+
+@code { 
+    [Parameter]
+    public string Component{ get; set; }
+
+
+
+}
