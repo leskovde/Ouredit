@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Components.Controllers;
 
 namespace Components.Models
 {
@@ -17,11 +18,13 @@ namespace Components.Models
         private static readonly object Mutex = new object();
         private readonly List<Buffer> _fileBuffers;
         public FileHandler FileHandlerInstance { get; }
+        public Settings.SettingsHandler SettingsHandlerInstance { get; }
 
         private ApplicationState()
         {
             _fileBuffers = new List<Buffer>();
             FileHandlerInstance = new FileHandler(this);
+            SettingsHandlerInstance = new Settings.SettingsHandler();
         }
 
         /// <summary>
