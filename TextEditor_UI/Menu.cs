@@ -417,7 +417,24 @@ namespace OurTextEditor
                             }
                         }
                     }
+                },
+                new MenuItem
+                {
+                    Label = "Shortcuts",
+                    Click = async () =>
+                    {
+                        var path = $"http://localhost:{BridgeSettings.WebPort}/shortcuts";
+
+                        var settingsWindowOptions = new BrowserWindowOptions
+                        {
+                            SkipTaskbar = true,
+                        };
+
+                        var settingsWindow = await Electron.WindowManager.CreateWindowAsync(settingsWindowOptions, path);
+                        settingsWindow.RemoveMenu();
+                    }
                 }
+
             };
 
             Electron.Menu.SetApplicationMenu(indexMenu);

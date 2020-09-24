@@ -3,14 +3,15 @@ using System.IO;
 using Components.DataRepository;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System;
 
 namespace Components.Controllers
 {
     [Sauerova]
     public class ShortcutGenerator
     {
-        private const string JSONFilePath = @"data/commands.json";
-        static ShortcutGenerator()
+        private const string JSONFilePath = @"commands.json";
+        public void InitializeShortcutGenerator()
         {
             //Creates JSON file with available commands as keys and their corresponding shortcuts
             if (!System.IO.File.Exists(JSONFilePath))

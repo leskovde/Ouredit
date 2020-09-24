@@ -1,12 +1,9 @@
-using Components.Models;
-using ElectronNET.API;
-using ElectronNET.API.Entities;
+using Components.Controllers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OurTextEditor.Data;
 
 namespace OurTextEditor
 {
@@ -25,7 +22,7 @@ namespace OurTextEditor
         {
             services.AddRazorPages();
             services.AddServerSideBlazor().AddCircuitOptions(config => config.DetailedErrors = true);
-            services.AddSingleton<WeatherForecastService>();
+            services.AddSingleton<ShortcutGenerator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
