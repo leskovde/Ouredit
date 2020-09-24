@@ -50,7 +50,7 @@ namespace OurTextEditor
                 endpoints.MapFallbackToPage("/_Host");
             });
 
-           Menu.SetMenu();
+           Menu.OpenMainWindow();
         }
     }
 }
