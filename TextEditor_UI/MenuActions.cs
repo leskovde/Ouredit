@@ -12,9 +12,14 @@ namespace OurTextEditor
     {
         public static string CurrentFilePath { get; private set;  } = "new.txt";
 
-        public static void SetCurrentFilePath(string fileName)
+        /// <summary>
+        /// Upon changing the CurrentFilePath, razor components need to be re-rendered.
+        /// This setter sends a notification message to the service that handles the page refreshing.
+        /// </summary>
+        /// <param name="filePath">The file path to the new current file.</param>
+        public static void SetCurrentFilePath(string filePath)
         {
-            CurrentFilePath = fileName;
+            CurrentFilePath = filePath;
             var handler = CurrentFileChanged;
             handler?.Invoke(CurrentFilePath, EventArgs.Empty);
         }
@@ -22,14 +27,30 @@ namespace OurTextEditor
         public static event EventHandler CurrentFileChanged = CurrentFileChangeNotify;
         public static event EventHandler OpenFilesChanged = OpenFilesChangeNotify;
 
+        /// <summary>
+        /// Serves as a notification message for the CurrentFileChangeService.
+        /// </summary>
         public static void CurrentFileChangeNotify(object sender, EventArgs e)
         {
             Console.WriteLine($"#DEBUG: The CurrentFile has been changed to: {CurrentFilePath}. Sending the notification further.");
         }
 
+        /// <summary>
+        /// Serves as a notification message for the OpenFilesChangeService.
+        /// </summary>
         public static void OpenFilesChangeNotify(object sender, EventArgs e)
         {
             Console.WriteLine($"#DEBUG: OpenFiles have been changed to: {string.Join(" ",ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames())}. Sending the notification further.");
+        }
+
+        /// <summary>
+        /// Serves as a worker function of the FileContentChangeService.
+        /// </summary>
+        public static void FileContentChanged(object sender, FileContentChangeArgs args)
+        {
+            Console.WriteLine($"#DEBUG: Performing clear and insert actions on the {args.FileBuffer.FileInstance.FileName} file buffer.");
+            args.FileBuffer.Clear();
+            args.FileBuffer.InsertAtCursor(args.FileContent);
         }
 
         public static async Task NewFileAsync()

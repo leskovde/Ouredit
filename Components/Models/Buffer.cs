@@ -43,6 +43,7 @@ namespace Components.Models
         public abstract void DumpBufferToCurrentFile();
         public abstract void DumpBufferToFile(File file);
         public abstract string GetBufferContent();
+        public abstract void Clear();
 
         protected virtual void Dispose(bool disposing)
         {

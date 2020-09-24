@@ -153,5 +153,17 @@ namespace Components.Models
 
             return content;
         }
+
+        public override void Clear()
+        {
+            lock (Mutex)
+            {
+                if (Storage.GetLength() > 0)
+                {
+                    Storage.Delete(0, Storage.GetLength() - 1);
+                }
+                BufferPosition = 0;
+            }
+        }
     }
 }
