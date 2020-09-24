@@ -34,7 +34,8 @@ namespace Components.Models
             BufferPosition = 0;
         }
 
-        public abstract void UpdateCursorPosition(int numberOfCharactersFromStart); // The argument is mocked for test purposes.
+        public abstract void UpdateCursorPosition(int numberOfCharactersFromStart);
+        public abstract (int, int) ParseCursorPosition();
         public abstract void InsertAtCursor(char content);
         public abstract void InsertAtCursor(string content);
         public abstract void DeleteAtCursorLeft(int numberOfCharacters);

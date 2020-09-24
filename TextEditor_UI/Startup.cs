@@ -29,6 +29,7 @@ namespace OurTextEditor
             services.AddSingleton<ICurrentFileChangeBroadcastService, CurrentFileChangeBroadcastService>();
             services.AddSingleton<IOpenFilesChangeBroadcastService, OpenFilesChangeBroadcastService>();
             services.AddSingleton<IFileContentChangeBroadcastService, FileContentChangeBroadcastService>();
+            services.AddSingleton<ICursorPositionChangeBroadcastService, CursorPositionChangeBroadcastService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

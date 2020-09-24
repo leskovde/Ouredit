@@ -25,6 +25,36 @@ namespace Components.Models
             BufferPosition = numberOfCharactersFromStart;
         }
 
+        public override (int, int) ParseCursorPosition()
+        {
+            var eolCount = 0;
+            var columns = 0;
+
+            var content = Storage.GetText(0, Math.Min(BufferPosition, Storage.GetLength() -1)) ?? string.Empty;
+            var previousChar = '\0';
+
+            foreach (var character in content)
+            {
+                columns++;
+
+                if (character == '\n' && previousChar != '\r')
+                {
+                    columns = 0;
+                    eolCount++;
+                }
+
+                if (character == '\r')
+                {
+                    columns = 0;
+                    eolCount++;
+                }
+
+                previousChar = character;
+            }
+
+            return (eolCount + 1, columns);
+        }
+
         /// <summary>
         /// Inserts a single character at the cursors position and moves the cursor.
         /// </summary>
@@ -48,7 +78,7 @@ namespace Components.Models
             lock (Mutex)
             {
                 Storage.Insert(content, BufferPosition);
-                Counter.UpdateCountsAdd(content);
+                Counter.CountFileContent(this);
                 BufferPosition += content.Length;
             }
         }
@@ -153,7 +183,7 @@ namespace Components.Models
                 content = Storage.GetText(0, Storage.GetLength() - 1);
             }
 
-            return content;
+            return content ?? string.Empty;
         }
 
         /// <summary>

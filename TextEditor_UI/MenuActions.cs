@@ -56,6 +56,16 @@ namespace OurTextEditor
             AutoSaver.Instance.Trigger();
         }
 
+        /// <summary>
+        /// Serves as a worker function of the FileContentChangeService.
+        /// </summary>
+        public static void CursorPositionChanged(object sender, CursorPositionChangeArgs args)
+        {
+            Console.WriteLine($"#DEBUG: Performing update cursor position action to {args.CursorPosition}.");
+            var buffer = ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(CurrentFilePath);
+            buffer.UpdateCursorPosition(args.CursorPosition);
+        }
+
         public static async Task NewFileAsync()
         {
             var task = new Task(() =>
