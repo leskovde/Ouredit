@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Components.Controllers;
 using Components.Models;
 using ElectronNET.API;
 
@@ -20,6 +21,7 @@ namespace OurTextEditor
         public static void SetCurrentFilePath(string filePath)
         {
             CurrentFilePath = filePath;
+            AutoSaver.Instance.Update(filePath);
             var handler = CurrentFileChanged;
             handler?.Invoke(CurrentFilePath, EventArgs.Empty);
         }
@@ -51,6 +53,7 @@ namespace OurTextEditor
             Console.WriteLine($"#DEBUG: Performing clear and insert actions on the {args.FileBuffer.FileInstance.FileName} file buffer.");
             args.FileBuffer.Clear();
             args.FileBuffer.InsertAtCursor(args.FileContent);
+            AutoSaver.Instance.Trigger();
         }
 
         public static async Task NewFileAsync()
