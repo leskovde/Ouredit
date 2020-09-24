@@ -8,6 +8,7 @@
 
 @inject ICurrentFileChangeBroadcastService CurrentFileService
 @inject IOpenFilesChangeBroadcastService OpenFilesService
+@inject IJSRuntime JsRuntime
 @implements IDisposable
 
 <body class="index">
@@ -35,6 +36,8 @@
         // TODO: Remove this sleep.
         Thread.Sleep(5000);
 
+        CursorInterop.JsRuntime = JsRuntime;
+
         CurrentFileService.OnCurrentFileChanged += CurrentFileChanged;
         OpenFilesService.OnOpenFilesChanged += OpenFilesChanged;
 
@@ -42,6 +45,9 @@
         _openFilePaths = ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames();
     }
 
+    /// <summary>
+    /// Updates the current file tab upon consuming a CurrentFileChange event.
+    /// </summary>
     private async void CurrentFileChanged(object sender, CurrentFileChangeArgs args)
     {
         CurrentFilePath = args.FilePath;
@@ -50,6 +56,9 @@
             base.StateHasChanged());
     }
 
+    /// <summary>
+    /// Updates the open files ribbon upon consuming an OpenFilesChange event.
+    /// </summary>
     private async void OpenFilesChanged(object sender, OpenFilesChangeArgs args)
     {
         _openFilePaths = args.OpenFiles;
@@ -61,6 +70,7 @@
     public void Dispose()
     {
         CurrentFileService.OnCurrentFileChanged -= CurrentFileChanged;
+        OpenFilesService.OnOpenFilesChanged -= OpenFilesChanged;
     }
 }
 
