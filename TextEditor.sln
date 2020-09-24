@@ -8,6 +8,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComponentsUnitTests", "ComponentsUnitTests\ComponentsUnitTests.csproj", "{1280C43A-C562-4E45-83E4-3322DFF53DA0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OurTextEditor", "TextEditor_UI\OurTextEditor.csproj", "{C9D4790C-EE09-48D5-9AAF-B586A6001224}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6BF95B37-3BFA-4B0A-AFDF-9814A4A6BBA7} = {6BF95B37-3BFA-4B0A-AFDF-9814A4A6BBA7}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
