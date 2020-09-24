@@ -67,6 +67,11 @@ namespace Components.Models
                 }
             }
 
+            if (content == null)
+            {
+                content = string.Empty;
+            }
+
             var byteArray = InputEncoding.GetBytes(content);
 
             if (byteOffset == 0 && InputEncoding is UTF7Encoding)
@@ -79,6 +84,7 @@ namespace Components.Models
             {
                 _fileStream.Seek(byteOffset, SeekOrigin.Begin);
                 _fileStream.Write(byteArray);
+                _fileStream.Flush();
             }
         }
 
@@ -175,6 +181,35 @@ namespace Components.Models
         public void SetOutputEncoding(EncodingType type)
         {
             OutputEncoding = Encodings.GetEncoding(type);
+        }
+
+        /// <summary>
+        /// Clears the current file, i.e deletes its content.
+        /// </summary>
+        public void Clear()
+        {
+            Console.WriteLine($"#DEBUG: Clearing the file {FilePath}.");
+
+            lock (Mutex)
+            {
+                _fileStream.SetLength(0);
+            }
+            
+            if (InputEncoding is UTF7Encoding)
+            {
+                // UTF-7 does not have a BOM by default in C#. Add the BOM.
+                var byteArray = new byte[] { 0x2b, 0x2f, 0x76, 0x38 };
+                lock (Mutex)
+                {
+                    _fileStream.Seek(0, SeekOrigin.Begin);
+                    _fileStream.Write(byteArray);
+                }
+            }
+
+            lock (Mutex)
+            {
+                _fileStream.Flush();
+            }
         }
 
         public void Dispose()

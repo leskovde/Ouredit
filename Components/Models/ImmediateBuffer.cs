@@ -109,22 +109,23 @@ namespace Components.Models
         }
 
         /// <summary>
-        /// Saves the content of the buffer to the current file.
+        /// Saves the content of the buffer to the current file and clears it beforehand.
         /// </summary>
         public override void DumpBufferToCurrentFile()
         {
             string bufferContent;
 
             lock (Mutex)
-            { 
+            {
                 bufferContent = Storage.GetText(0, Storage.GetLength() - 1);
             }
 
+            FileInstance.Clear();
             FileInstance.WriteToFile(0, bufferContent);
         }
 
         /// <summary>
-        /// Saves the content of the buffer to a given file.
+        /// Saves the content of the buffer to a given file and clears it beforehand.
         /// </summary>
         public override void DumpBufferToFile(File file)
         {
@@ -135,6 +136,7 @@ namespace Components.Models
                 bufferContent = Storage.GetText(0, Storage.GetLength() - 1);
             }
 
+            file.Clear();
             file.WriteToFile(0, bufferContent);
         }
 
@@ -154,6 +156,9 @@ namespace Components.Models
             return content;
         }
 
+        /// <summary>
+        /// Clears the storage content and resets the buffer position.
+        /// </summary>
         public override void Clear()
         {
             lock (Mutex)
@@ -162,6 +167,7 @@ namespace Components.Models
                 {
                     Storage.Delete(0, Storage.GetLength() - 1);
                 }
+
                 BufferPosition = 0;
             }
         }
