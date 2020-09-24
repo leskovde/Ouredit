@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Components.Controllers;
 
 namespace Components.Models
 {
@@ -12,7 +13,10 @@ namespace Components.Models
     {
         //private const int _blockSize = 4096 * 1024;
 
-        public ImmediateBuffer(File file) : base(file) { }
+        public ImmediateBuffer(File file) : base(file)
+        {
+            Counter = new TextCounter();
+        }
 
         // TODO: Create an abstraction for the cursor OR get position info in any other way.
         public override void UpdateCursorPosition(int numberOfCharactersFromStart)

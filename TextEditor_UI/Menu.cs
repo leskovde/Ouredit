@@ -6,6 +6,8 @@ using ElectronNET.API;
 using ElectronNET.API.Entities;
 using System;
 using System.Linq;
+using System.Threading;
+
 namespace OurTextEditor
 {
     public static class Menu
@@ -21,19 +23,20 @@ namespace OurTextEditor
             mainWindow.OnReadyToShow += () =>
             {
                 mainWindow.Show();
-
                 var openFiles = ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames();
 
                 // If history is present, set the first file as selected. Otherwise open a new file and set it as selected.
                 if (openFiles.Count > 0)
                 {
-                    Electron.IpcMain.Send(mainWindow, "async-tab-select-cs-caller", openFiles.First());
+                    MenuActions.SetCurrentFilePath(openFiles.First());
                 }
                 else
                 {
                     ApplicationState.Instance.FileHandlerInstance.OpenFile("new.txt");
-                    Electron.IpcMain.Send(mainWindow, "async-tab-select-cs-caller", "new.txt");
+                    ApplicationState.Instance.FileHandlerInstance.GetFileBuffer("new.txt").FillBufferFromFile();
+                    MenuActions.SetCurrentFilePath("new.txt");
                 }
+
             };
             mainWindow.OnClosed += () => { Electron.App.Quit(); };
 
@@ -153,7 +156,7 @@ namespace OurTextEditor
                                     Label = "LF",
                                     Click = async () =>
                                     {
-                                        await CommandInvoker.Instance.Execute(new ChangeLineEndings(MenuActions.CurrentFileName, LineEndings.LF));
+                                        await CommandInvoker.Instance.Execute(new ChangeLineEndings(MenuActions.CurrentFilePath, LineEndings.LF));
                                     }
                                 },
                                 new MenuItem
@@ -161,7 +164,7 @@ namespace OurTextEditor
                                     Label = "CR",
                                     Click = async () =>
                                     {
-                                        await CommandInvoker.Instance.Execute(new ChangeLineEndings(MenuActions.CurrentFileName, LineEndings.CR));
+                                        await CommandInvoker.Instance.Execute(new ChangeLineEndings(MenuActions.CurrentFilePath, LineEndings.CR));
                                     }
                                 },
                                 new MenuItem
@@ -169,7 +172,7 @@ namespace OurTextEditor
                                     Label = "CR LF",
                                     Click = async () =>
                                     {
-                                        await CommandInvoker.Instance.Execute(new ChangeLineEndings(MenuActions.CurrentFileName, LineEndings.CRLF));
+                                        await CommandInvoker.Instance.Execute(new ChangeLineEndings(MenuActions.CurrentFilePath, LineEndings.CRLF));
                                     }
                                 },
                             }
@@ -257,7 +260,7 @@ namespace OurTextEditor
                             {
                                 encodingCheckedValues.Clear();
                                 encodingCheckedValues[0] = true;
-                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFileName, EncodingType.UTF7));
+                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF7));
                             }
                         },
                         new MenuItem
@@ -267,7 +270,7 @@ namespace OurTextEditor
                             {
                                 encodingCheckedValues.Clear();
                                 encodingCheckedValues[1] = true;
-                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFileName, EncodingType.UTF8));
+                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF8));
                             }
                         },
                         new MenuItem
@@ -277,7 +280,7 @@ namespace OurTextEditor
                             {
                                 encodingCheckedValues.Clear();
                                 encodingCheckedValues[2] = true;
-                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFileName, EncodingType.UTF16LE));
+                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF16LE));
                             }
                         },
                         new MenuItem
@@ -287,7 +290,7 @@ namespace OurTextEditor
                             {
                                 encodingCheckedValues.Clear();
                                 encodingCheckedValues[3] = true;
-                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFileName, EncodingType.UTF16BE));
+                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF16BE));
                             }
                         },
                         new MenuItem
@@ -297,7 +300,7 @@ namespace OurTextEditor
                             {
                                 encodingCheckedValues.Clear();
                                 encodingCheckedValues[4] = true;
-                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFileName, EncodingType.UTF32LE));
+                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF32LE));
                             }
                         },
                         new MenuItem
@@ -307,7 +310,7 @@ namespace OurTextEditor
                             {
                                 encodingCheckedValues.Clear();
                                 encodingCheckedValues[5] = true;
-                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFileName, EncodingType.UTF32BE));
+                                await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF32BE));
                             }
                         },
                         new MenuItem
@@ -328,7 +331,7 @@ namespace OurTextEditor
                                     {
                                         encodingCheckedValues.Clear();
                                         encodingCheckedValues[0] = true;
-                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFileName, EncodingType.UTF7));
+                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFilePath, EncodingType.UTF7));
                                     }
                                 },
                                 new MenuItem
@@ -340,7 +343,7 @@ namespace OurTextEditor
                                     {
                                         encodingCheckedValues.Clear();
                                         encodingCheckedValues[1] = true;
-                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFileName, EncodingType.UTF8));
+                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFilePath, EncodingType.UTF8));
                                     }
                                 },
                                 new MenuItem
@@ -352,7 +355,7 @@ namespace OurTextEditor
                                     {
                                         encodingCheckedValues.Clear();
                                         encodingCheckedValues[2] = true;
-                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFileName, EncodingType.UTF16LE));
+                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFilePath, EncodingType.UTF16LE));
                                     }
                                 },
                                 new MenuItem
@@ -364,7 +367,7 @@ namespace OurTextEditor
                                     {
                                         encodingCheckedValues.Clear();
                                         encodingCheckedValues[3] = true;
-                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFileName, EncodingType.UTF16BE));
+                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFilePath, EncodingType.UTF16BE));
                                     }
                                 },
                                 new MenuItem
@@ -376,7 +379,7 @@ namespace OurTextEditor
                                     {
                                         encodingCheckedValues.Clear();
                                         encodingCheckedValues[4] = true;
-                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFileName, EncodingType.UTF32LE));
+                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFilePath, EncodingType.UTF32LE));
                                     }
                                 },
                                 new MenuItem
@@ -388,7 +391,7 @@ namespace OurTextEditor
                                     {
                                         encodingCheckedValues.Clear();
                                         encodingCheckedValues[5] = true;
-                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFileName, EncodingType.UTF32BE));
+                                        await CommandInvoker.Instance.Execute(new ChangeEncodingInterpretation(MenuActions.CurrentFilePath, EncodingType.UTF32BE));
                                     }
                                 },
                             }
@@ -421,13 +424,6 @@ namespace OurTextEditor
             };
 
             Electron.Menu.SetApplicationMenu(indexMenu);
-
-            Electron.IpcMain.On("async-tab-select-js-caller", (args) =>
-            {
-                Console.WriteLine($"#DEBUG: The main process has received a message from the renderer: {args}");
-                MenuActions.CurrentFileName = args.ToString();
-            });
         }
-
     }
 }
