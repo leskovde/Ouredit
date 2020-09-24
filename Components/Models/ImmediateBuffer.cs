@@ -27,8 +27,10 @@ namespace Components.Models
 
         public override (int, int) ParseCursorPosition()
         {
-            var eolCount = 0;
-            var columns = 0;
+            var eolCount = 1;
+            var columns = 1;
+
+            if (BufferPosition == 0) return (eolCount, columns);
 
             var content = Storage.GetText(0, Math.Min(BufferPosition, Storage.GetLength() -1)) ?? string.Empty;
             var previousChar = '\0';
@@ -39,20 +41,20 @@ namespace Components.Models
 
                 if (character == '\n' && previousChar != '\r')
                 {
-                    columns = 0;
+                    columns = 1;
                     eolCount++;
                 }
 
                 if (character == '\r')
                 {
-                    columns = 0;
+                    columns = 1;
                     eolCount++;
                 }
 
                 previousChar = character;
             }
 
-            return (eolCount + 1, columns);
+            return (eolCount, columns);
         }
 
         /// <summary>

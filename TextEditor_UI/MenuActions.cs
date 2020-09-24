@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Components.Controllers;
 using Components.Models;
 using ElectronNET.API;
+using ElectronNET.API.Entities;
 
 namespace OurTextEditor
 {
@@ -42,7 +43,7 @@ namespace OurTextEditor
         /// </summary>
         public static void OpenFilesChangeNotify(object sender, EventArgs e)
         {
-            Console.WriteLine($"#DEBUG: OpenFiles have been changed to: {string.Join(" ",ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames())}. Sending the notification further.");
+            Console.WriteLine($"#DEBUG: OpenFiles have been changed to: {string.Join(" ",ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths())}. Sending the notification further.");
         }
 
         /// <summary>
@@ -68,14 +69,33 @@ namespace OurTextEditor
 
         public static async Task NewFileAsync()
         {
+            var mainWindow = Electron.WindowManager.BrowserWindows.First();
+
+            var options = new OpenDialogOptions
+            {
+                Title = "New File",
+                Properties = new OpenDialogProperty[] {
+                    OpenDialogProperty.openFile,
+                    OpenDialogProperty.promptToCreate,
+                }
+            };
+
+            var files = await Electron.Dialog.ShowOpenDialogAsync(mainWindow, options);
+            var filePath = files.FirstOrDefault();
+
+            if (filePath == default)
+            {
+                return;
+            }
+
             var task = new Task(() =>
             {
                 try
                 {
-                    ApplicationState.Instance.FileHandlerInstance.NewFile("new-file2.txt");
-                    ApplicationState.Instance.FileHandlerInstance.GetFileBuffer("new-file2.txt").FillBufferFromFile();
+                    ApplicationState.Instance.FileHandlerInstance.NewFile(filePath);
+                    ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(filePath).FillBufferFromFile();
                     var handler = OpenFilesChanged;
-                    handler?.Invoke(ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames(), EventArgs.Empty);
+                    handler?.Invoke(ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths(), EventArgs.Empty);
                 }
                 catch (InvalidOperationException e)
                 {
@@ -90,19 +110,117 @@ namespace OurTextEditor
 
         public static async Task OpenFileAsync()
         {
+            var mainWindow = Electron.WindowManager.BrowserWindows.First();
+
+            var options = new OpenDialogOptions
+            {
+                Title = "Open File",
+                Properties = new OpenDialogProperty[] {
+                    OpenDialogProperty.openFile
+                }
+            };
+
+            var files = await Electron.Dialog.ShowOpenDialogAsync(mainWindow, options);
+            var filePath = files.FirstOrDefault();
+
+            if (filePath == default)
+            {
+                return;
+            }
+
             var task = new Task(() =>
             {
                 try
                 {
-                    ApplicationState.Instance.FileHandlerInstance.OpenFile("new-file1.txt");
-                    ApplicationState.Instance.FileHandlerInstance.GetFileBuffer("new-file1.txt").FillBufferFromFile();
+                    ApplicationState.Instance.FileHandlerInstance.OpenFile(filePath);
+                    ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(filePath).FillBufferFromFile();
                     var handler = OpenFilesChanged;
-                    handler?.Invoke(ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames(), EventArgs.Empty);
+                    handler?.Invoke(ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths(), EventArgs.Empty);
 
                 }
                 catch (InvalidOperationException e)
                 {
                     Electron.Dialog.ShowErrorBox("File Error", "File is already open or doesn't exists.");
+                    Console.WriteLine(e.StackTrace);
+                }
+            });
+
+            task.Start();
+            await task;
+        }
+
+        public static async Task SaveFileAsync()
+        {
+            var task = new Task(() =>
+            {
+                try
+                {
+                    ApplicationState.Instance.FileHandlerInstance.SaveFile(CurrentFilePath, CurrentFilePath);
+                }
+                catch (InvalidOperationException e)
+                {
+                    Electron.Dialog.ShowErrorBox("File Error", "File couldn't be saved.");
+                    Console.WriteLine(e.StackTrace);
+                }
+            });
+
+            task.Start();
+            await task;
+        }
+
+        public static async Task SaveFileAsAsync()
+        {
+            var mainWindow = Electron.WindowManager.BrowserWindows.First();
+
+            var options = new SaveDialogOptions
+            {
+                Title = "Save As..."
+            };
+
+            var filePath = await Electron.Dialog.ShowSaveDialogAsync(mainWindow, options);
+
+            var task = new Task(() =>
+            {
+                try
+                {
+                    ApplicationState.Instance.FileHandlerInstance.SaveFile(CurrentFilePath, filePath);
+                }
+                catch (InvalidOperationException e)
+                {
+                    Electron.Dialog.ShowErrorBox("File Error", "File couldn't be saved.");
+                    Console.WriteLine(e.StackTrace);
+                }
+            });
+
+            task.Start();
+            await task;
+        }
+
+        public static async Task CloseAsync()
+        {
+            var task = new Task(() =>
+            {
+                try
+                {
+                    var openFiles = ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths();
+                    if (openFiles.Count <= 1)
+                    {
+                        Electron.Dialog.ShowErrorBox("Close Error", "Last File Tab cannot be closed.");
+                        return;
+                    }
+
+                    ApplicationState.Instance.FileHandlerInstance.CloseFile(CurrentFilePath);
+                    CurrentFilePath = ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths().First();
+
+                    var currentFileHandler = CurrentFileChanged;
+                    currentFileHandler?.Invoke(openFiles, EventArgs.Empty);
+
+                    var openFilesHandler = OpenFilesChanged;
+                    openFilesHandler?.Invoke(openFiles, EventArgs.Empty);
+                }
+                catch (InvalidOperationException e)
+                {
+                    Electron.Dialog.ShowErrorBox("File Error", "File couldn't be closed.");
                     Console.WriteLine(e.StackTrace);
                 }
             });

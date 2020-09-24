@@ -42,7 +42,7 @@
         OpenFilesService.OnOpenFilesChanged += OpenFilesChanged;
 
         CurrentFilePath = CurrentFileService.GetCurrentValue();
-        _openFilePaths = ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames();
+        _openFilePaths = ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths();
     }
 
     /// <summary>
