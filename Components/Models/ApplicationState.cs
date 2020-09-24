@@ -159,9 +159,9 @@ namespace Components.Models
             /// Creates a collection of all opened files. The collection contains file names (i. e. not full paths, just names with extensions).
             /// </summary>
             /// <returns></returns>
-            public List<string> GetOpenFileNames()
+            public List<string> GetOpenFilePaths()
             {
-                return _applicationState._fileBuffers.Select(x => x.FileInstance.FileName).ToList();
+                return _applicationState._fileBuffers.Select(x => x.FileInstance.FilePath).ToList();
             }
         }
     }

@@ -50,6 +50,8 @@ namespace Components.Models
             }
 
             OutputEncoding = InputEncoding;
+
+            Console.WriteLine($"#DEBUG: Created a new file: Name: {FileName}, Path: {FilePath}, Size: {FileSize}, Encoding: {InputEncoding}.");
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿@using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments
+﻿@using System.IO
+@using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments
 <div id="files-ribbon">
     <!--
     Print all file names kept in the application state.
@@ -7,7 +8,7 @@
     -->
     @foreach (var domWrapper in _wrappedFilePaths)
     {
-        <button class="@RenderDomClass(domWrapper)" @onclick="_ => ChangeToSelectedUserSide(domWrapper)">@domWrapper.FilePath</button>
+        <button class="@RenderDomClass(domWrapper)" @onclick="_ => ChangeToSelectedUserSide(domWrapper)">@domWrapper.FileName</button>
     }
 </div>
 
@@ -81,12 +82,14 @@
         public int Id;
         public readonly List<string> DomClasses;
         public readonly string FilePath;
+        public readonly string FileName;
 
         public DomWrapper(int id, string path)
         {
             Id = id;
             DomClasses = new List<string>() { "file-tab" };
             FilePath = path;
+            FileName = Path.GetFileName(path);
         }
     }
 

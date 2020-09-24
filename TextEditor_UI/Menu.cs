@@ -45,7 +45,7 @@ namespace OurTextEditor
             mainWindow.OnReadyToShow += () =>
             {
                 mainWindow.Show();
-                var openFiles = ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames();
+                var openFiles = ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths();
 
                 // If history is present, set the first file as selected. Otherwise open a new file and set it as selected.
                 if (openFiles.Count > 0)
@@ -63,13 +63,8 @@ namespace OurTextEditor
             mainWindow.OnClosed += () => { Electron.App.Quit(); };
 
             SetMenu();
-
-            Electron.IpcMain.On("async-tab-select-js-caller", (args) =>
-            {
-                Console.WriteLine($"#DEBUG: The main process has received a message from the renderer: {args}");
-                MenuActions.CurrentFileName = args.ToString();
-            });
         } 
+
         static void SetMenu()
         {
             var encodingCheckedValues = new bool[6];
@@ -83,39 +78,34 @@ namespace OurTextEditor
                     {
                         new MenuItem
                         {
-                            Label = "[NI]New",
+                            Label = "New",
                             Accelerator = Commands["New file"],
                             Click = async () => { await MenuActions.NewFileAsync(); }
                         },
                         new MenuItem
                         {
-                            Label = "[NI]Open...",
+                            Label = "Open...",
                             Accelerator = Commands["Open file"],
                             Click = async () => { await MenuActions.OpenFileAsync(); }
                         },
                         new MenuItem
                         {
-                            Label = "[NI]Save",
-                             Accelerator = Commands["Save file"],
-                            Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
+                            Label = "Save",
+                            Accelerator = Commands["Save file"],
+                            Click = async () => { await MenuActions.SaveFileAsync(); }
                         },
                         new MenuItem
                         {
-                            Label = "[NI]Save as...",
+                            Label = "Save as...",
                             Accelerator = Commands["Save file as"],
-                            Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
+                            Click = async () => { await MenuActions.SaveFileAsAsync(); }
+
                         },
                         new MenuItem
                         {
-                            Label = "[NI]Close",
+                            Label = "Close",
                             Accelerator = Commands["Close file"],
-                            Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
-                        },
-                        new MenuItem
-                        {
-                            Label = "[NI]Close All",
-                            Accelerator = Commands["Close all files"],
-                            Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
+                            Click = async () => { await MenuActions.CloseAsync(); }
                         },
                         new MenuItem
                         {

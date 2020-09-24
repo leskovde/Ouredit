@@ -57,7 +57,7 @@ namespace OurTextEditor
         private void OpenFiles_Changed(object sender, EventArgs e)
         {
             Console.WriteLine("#DEBUG: The notification has been received by the OpenFilesChangedBroadcastService.");
-            OnOpenFilesChanged?.Invoke(this, new OpenFilesChangeArgs(ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames()));
+            OnOpenFilesChanged?.Invoke(this, new OpenFilesChangeArgs(ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths()));
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace OurTextEditor
         /// <returns>The updated list of open file paths.</returns>
         public List<string> GetCurrentValue()
         {
-            return ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames();
+            return ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths();
         }
     }
 }

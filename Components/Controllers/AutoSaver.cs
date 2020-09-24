@@ -39,7 +39,7 @@ namespace Components.Controllers
         public void Trigger()
         {
             Console.WriteLine($"#DEBUG: Saving the file {_currentFilePath}.");
-            ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(_currentFilePath).DumpBufferToCurrentFile();
+            ApplicationState.Instance.FileHandlerInstance.SaveFile(_currentFilePath, _currentFilePath);
         }
     }
 }
