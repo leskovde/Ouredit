@@ -8,8 +8,8 @@
     {
         <li>
             <b>@command.Key</b>: @command.Value
-            <input type="text" @bind-value="newValue"  />
-            <button @onclick="@(e => ChangeShortcutHandller(command.Key))">Change</button>
+            <input type="text" @oninput="@((e) => { newValue=(string)e.Value;})"  />
+            <button class="btn btn-light" @onclick="@(e => ChangeShortcutHandller(command.Key))">Change</button>
         </li>
      }
 </ul>
@@ -21,8 +21,6 @@
 
         protected override async Task OnInitializedAsync()
         {
-            Console.WriteLine("Jsem zde 1");
-            ShortcutsController.InitializeShortcutGenerator();
             commandList = await ShortcutsController.GetCurrentCommandListAsync();
         }
 
@@ -30,7 +28,11 @@
         {
             if (!string.IsNullOrEmpty(newValue))
             {
-                await ShortcutsController.ChangeShortcutAsync(command, newValue);
+                if (await ShortcutsController.ChangeShortcutAsync(command, newValue))
+                {
+                    commandList = await ShortcutsController.GetCurrentCommandListAsync();
+                    Menu.RaiseEvent(this);
+                }
             }
             else
             {

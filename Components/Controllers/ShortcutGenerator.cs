@@ -11,12 +11,12 @@ namespace Components.Controllers
     public class ShortcutGenerator
     {
         private const string JSONFilePath = @"commands.json";
-        public void InitializeShortcutGenerator()
+        public ShortcutGenerator()
         {
             //Creates JSON file with available commands as keys and their corresponding shortcuts
             if (!System.IO.File.Exists(JSONFilePath))
             {
-                using (StreamWriter sw = System.IO.File.CreateText(JSONFilePath))
+                using (StreamWriter sw = File.CreateText(JSONFilePath))
                 {
                     sw.Write(SerializeToFile(CommandList.Get()));
                 }
@@ -33,7 +33,7 @@ namespace Components.Controllers
 
         public async Task<Dictionary<string, string>> GetCurrentCommandListAsync()
         {
-            if (!System.IO.File.Exists(JSONFilePath))
+            if (System.IO.File.Exists(JSONFilePath))
             {
                 string content;
                 using (StreamReader sr = new StreamReader(JSONFilePath))
@@ -56,7 +56,7 @@ namespace Components.Controllers
             Dictionary<string, string> commandList = await GetCurrentCommandListAsync();
             if (EnsureUnambiguityAsync(commandList, newShortcut))
             {
-                if (commandList.ContainsValue(command))
+                if (commandList.ContainsKey(command))
                 {
                     commandList[command] = newShortcut;
                     await System.IO.File.WriteAllTextAsync(JSONFilePath, SerializeToFile(commandList));

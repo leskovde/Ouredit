@@ -4,14 +4,37 @@ using Components.Controllers;
 using Components.Models;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
+using Microsoft.AspNetCore.Components;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
+
 namespace OurTextEditor
 {
     public static class Menu
     {
-        public static async void SetMenu()
+        public static event EventHandler ShortcutsChanged;
+        static ShortcutGenerator ShortcutGenerator = new ShortcutGenerator();
+        static Dictionary<string, string> Commands { get; set; }
+
+        public static void RaiseEvent(object sender)
         {
+            ShortcutsChanged?.Invoke(sender ,EventArgs.Empty);
+        }
+
+        static async void UpdateShortcuts(object sender, EventArgs args)
+        {
+            Commands = await ShortcutGenerator.GetCurrentCommandListAsync();
+            SetMenu();
+        }
+
+        public static async void OpenMainWindow()
+        {
+            ShortcutsChanged += UpdateShortcuts;
+            Commands = await ShortcutGenerator.GetCurrentCommandListAsync();
+
             var options = new BrowserWindowOptions()
             {
                 Show = false,
@@ -37,6 +60,16 @@ namespace OurTextEditor
             };
             mainWindow.OnClosed += () => { Electron.App.Quit(); };
 
+            SetMenu();
+
+            Electron.IpcMain.On("async-tab-select-js-caller", (args) =>
+            {
+                Console.WriteLine($"#DEBUG: The main process has received a message from the renderer: {args}");
+                MenuActions.CurrentFileName = args.ToString();
+            });
+        } 
+        static void SetMenu()
+        {
             var encodingCheckedValues = new bool[6];
 
             var indexMenu = new MenuItem[]
@@ -49,36 +82,43 @@ namespace OurTextEditor
                         new MenuItem
                         {
                             Label = "[NI]New",
+                            Accelerator = Commands["New file"],
                             Click = async () => { await MenuActions.NewFileAsync(); }
                         },
                         new MenuItem
                         {
                             Label = "[NI]Open...",
+                            Accelerator = Commands["Open file"],
                             Click = async () => { await MenuActions.OpenFileAsync(); }
                         },
                         new MenuItem
                         {
                             Label = "[NI]Save",
+                             Accelerator = Commands["Save file"],
                             Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
                         },
                         new MenuItem
                         {
                             Label = "[NI]Save as...",
+                            Accelerator = Commands["Save file as"],
                             Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
                         },
                         new MenuItem
                         {
                             Label = "[NI]Close",
+                            Accelerator = Commands["Close file"],
                             Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
                         },
                         new MenuItem
                         {
                             Label = "[NI]Close All",
+                            Accelerator = Commands["Close all files"],
                             Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
                         },
                         new MenuItem
                         {
                             Label = "Exit",
+                            Accelerator = Commands["Exit"],
                             Click = () => { Electron.WindowManager.BrowserWindows.First().Close(); }
                         },
                     }
@@ -403,6 +443,7 @@ namespace OurTextEditor
                         new MenuItem
                         {
                             Label = "[NI]Change Settings",
+                            Accelerator="F10",
                             Click = async () =>
                             {
                                 var path = $"http://localhost:{BridgeSettings.WebPort}/settings";
@@ -438,12 +479,6 @@ namespace OurTextEditor
             };
 
             Electron.Menu.SetApplicationMenu(indexMenu);
-
-            Electron.IpcMain.On("async-tab-select-js-caller", (args) =>
-            {
-                Console.WriteLine($"#DEBUG: The main process has received a message from the renderer: {args}");
-                MenuActions.CurrentFileName = args.ToString();
-            });
         }
 
     }
