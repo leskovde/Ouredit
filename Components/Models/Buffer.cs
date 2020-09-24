@@ -12,7 +12,7 @@ namespace Components.Models
     public abstract class Buffer : IDisposable
     {
         public File FileInstance { get; }
-        public TextCounter Counter { get; }
+        public TextCounter Counter { get; protected set; }
         protected GapBuffer Storage;
         protected static object Mutex = new object();
         
@@ -34,7 +34,8 @@ namespace Components.Models
             BufferPosition = 0;
         }
 
-        public abstract void UpdateCursorPosition(int numberOfCharactersFromStart); // The argument is mocked for test purposes.
+        public abstract void UpdateCursorPosition(int numberOfCharactersFromStart);
+        public abstract (int, int) ParseCursorPosition();
         public abstract void InsertAtCursor(char content);
         public abstract void InsertAtCursor(string content);
         public abstract void DeleteAtCursorLeft(int numberOfCharacters);
@@ -43,6 +44,7 @@ namespace Components.Models
         public abstract void DumpBufferToCurrentFile();
         public abstract void DumpBufferToFile(File file);
         public abstract string GetBufferContent();
+        public abstract void Clear();
 
         protected virtual void Dispose(bool disposing)
         {

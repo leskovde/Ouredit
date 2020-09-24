@@ -15,6 +15,11 @@ namespace Components.Models
             throw new NotImplementedException();
         }
 
+        public override (int, int) ParseCursorPosition()
+        {
+            throw new NotImplementedException();
+        }
+
         public override void InsertAtCursor(char content)
         {
             throw new NotImplementedException();
@@ -51,6 +56,11 @@ namespace Components.Models
         }
 
         public override string GetBufferContent()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Clear()
         {
             throw new NotImplementedException();
         }

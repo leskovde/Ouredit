@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Components.Controllers;
 
 namespace Components.Models
 {
@@ -12,13 +13,46 @@ namespace Components.Models
     {
         //private const int _blockSize = 4096 * 1024;
 
-        public ImmediateBuffer(File file) : base(file) { }
+        public ImmediateBuffer(File file) : base(file)
+        {
+            Counter = new TextCounter();
+        }
 
         // TODO: Create an abstraction for the cursor OR get position info in any other way.
         public override void UpdateCursorPosition(int numberOfCharactersFromStart)
         {
             // MOCK for test purposes.
             BufferPosition = numberOfCharactersFromStart;
+        }
+
+        public override (int, int) ParseCursorPosition()
+        {
+            var eolCount = 0;
+            var columns = 0;
+
+            var content = Storage.GetText(0, Math.Min(BufferPosition, Storage.GetLength() -1)) ?? string.Empty;
+            var previousChar = '\0';
+
+            foreach (var character in content)
+            {
+                columns++;
+
+                if (character == '\n' && previousChar != '\r')
+                {
+                    columns = 0;
+                    eolCount++;
+                }
+
+                if (character == '\r')
+                {
+                    columns = 0;
+                    eolCount++;
+                }
+
+                previousChar = character;
+            }
+
+            return (eolCount + 1, columns);
         }
 
         /// <summary>
@@ -44,7 +78,7 @@ namespace Components.Models
             lock (Mutex)
             {
                 Storage.Insert(content, BufferPosition);
-                Counter.UpdateCountsAdd(content);
+                Counter.CountFileContent(this);
                 BufferPosition += content.Length;
             }
         }
@@ -105,22 +139,23 @@ namespace Components.Models
         }
 
         /// <summary>
-        /// Saves the content of the buffer to the current file.
+        /// Saves the content of the buffer to the current file and clears it beforehand.
         /// </summary>
         public override void DumpBufferToCurrentFile()
         {
             string bufferContent;
 
             lock (Mutex)
-            { 
+            {
                 bufferContent = Storage.GetText(0, Storage.GetLength() - 1);
             }
 
+            FileInstance.Clear();
             FileInstance.WriteToFile(0, bufferContent);
         }
 
         /// <summary>
-        /// Saves the content of the buffer to a given file.
+        /// Saves the content of the buffer to a given file and clears it beforehand.
         /// </summary>
         public override void DumpBufferToFile(File file)
         {
@@ -131,6 +166,7 @@ namespace Components.Models
                 bufferContent = Storage.GetText(0, Storage.GetLength() - 1);
             }
 
+            file.Clear();
             file.WriteToFile(0, bufferContent);
         }
 
@@ -147,7 +183,23 @@ namespace Components.Models
                 content = Storage.GetText(0, Storage.GetLength() - 1);
             }
 
-            return content;
+            return content ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Clears the storage content and resets the buffer position.
+        /// </summary>
+        public override void Clear()
+        {
+            lock (Mutex)
+            {
+                if (Storage.GetLength() > 0)
+                {
+                    Storage.Delete(0, Storage.GetLength() - 1);
+                }
+
+                BufferPosition = 0;
+            }
         }
     }
 }

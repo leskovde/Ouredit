@@ -58,6 +58,7 @@ namespace Components.Controllers
                 command.Execute();
                 _executeCommandHistory.Push(command);
                 _undoCommandHistory.Clear();
+                AutoSaver.Instance.Trigger();
             });
             
             task.Start();
@@ -84,6 +85,8 @@ namespace Components.Controllers
                     command.Undo();
                     _undoCommandHistory.Push(command);
                 }
+
+                AutoSaver.Instance.Trigger();
             });
 
             task.Start();
@@ -108,6 +111,8 @@ namespace Components.Controllers
                     var command = _undoCommandHistory.Pop();
                     command.Execute();
                 }
+
+                AutoSaver.Instance.Trigger();
             });
 
             task.Start();

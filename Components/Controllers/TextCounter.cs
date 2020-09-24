@@ -25,7 +25,7 @@ namespace Components.Controllers
         {
             WordCount = 0;
             CharacterCount = 0;
-            LineCount = 0;
+            LineCount = 1;
 
             _previousChar = '\0';
 
@@ -39,7 +39,12 @@ namespace Components.Controllers
         public void UpdateCountsAdd(char inputChar)
         {
             CharacterCount++;
-            
+
+            if (WordCount == 0 && !Char.IsWhiteSpace(_previousChar))
+            {
+                WordCount++;
+            }
+
             if (Char.IsWhiteSpace(inputChar) && !Char.IsWhiteSpace(_previousChar))
             {
                 WordCount++;

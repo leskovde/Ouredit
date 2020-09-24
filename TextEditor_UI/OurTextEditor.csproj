@@ -10,6 +10,9 @@
     <PackageReference Include="ElectronNET.API" Version="9.31.2" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Components\Components.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Components">
       <HintPath>..\Components\bin\Debug\netcoreapp3.1\Components.dll</HintPath>
     </Reference>
