@@ -1,23 +1,78 @@
 ﻿@using Components.Models
+@using Buffer = Components.Models.Buffer
+@inject IFileContentChangeBroadcastService FileContentService
 @*
     Current file content
 *@
 
-<div id="text-box" contenteditable="true">
-    #DEBUG: Content of the file @CurrentFilePath <br/>
-    ---#DEBUG Start---@_fileContent---#DEBUG End---
+<textarea id="text-box" @bind="_fileContent" @oninput="ui => 
+                                                       { 
+                                                           _fileContent = (string)ui.Value; 
+                                                           var handler = FileContentChanged;
+                                                           handler?.Invoke(CurrentFilePath, new FileContentChangeArgs(_currentBuffer, _fileContent)); 
+                                                       }"></textarea>
+
+@*
+    ContentEditable container - looks better, but doesn't preserve encoding.
+
+<div @ref="editorEdit" id="text-box" @onkeydown="GetContent" contenteditable>
+    @((MarkupString)_fileContent)
 </div>
+*@
+
+@functions
+{
+    @*
+        Content getter for the ContentEditable container.
+    async Task GetContent()
+    {
+        var tmp = await JS.InvokeAsync<string>("JsLib.getInnerHtml", editorEdit);
+        value = tmp.Replace("<!--!-->", string.Empty);
+        value = value.Replace("<div>", string.Empty);
+        value = value.Replace("<br>", "\n");
+        value = value.Replace("</div>", "\n");
+        value = value.Replace("&nbsp;", " ");
+
+        Console.WriteLine($"#DEBUG: Text box value has changed.\n" +
+                          $"{(MarkupString)value}");
+    }
+    *@
+
+}
 
 @code{
     [Parameter]
     public string CurrentFilePath { get; set; }
 
     private string _fileContent;
+    private Buffer _currentBuffer;
 
+    @*
+        Reference for the ContentEditable container.
+    private ElementReference editorEdit;
+    *@
+
+    protected override void OnInitialized()
+    {
+        FileContentService.OnFileContentChanged += MenuActions.FileContentChanged;
+    
+    }
+    
     protected override void OnParametersSet()
     {
         Console.WriteLine($"#DEBUG: Updating the text box content to the {CurrentFilePath} file.");
-        _fileContent = ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(CurrentFilePath).GetBufferContent();
+        _currentBuffer = ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(CurrentFilePath);
+        _fileContent = _currentBuffer.GetBufferContent();
+    }
+    
+    public static event EventHandler<FileContentChangeArgs> FileContentChanged = FileContentChangeNotify;
+    
+    /// <summary>
+    /// Serves as a notification message for the FileContentChangeService.
+    /// </summary>
+    public static void FileContentChangeNotify(object sender, FileContentChangeArgs e)
+    {
+        Console.WriteLine($"#DEBUG: File content has been changed to: {e.FileContent}. Sending the notification further.");
     }
 
 }

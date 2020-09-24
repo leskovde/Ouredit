@@ -28,6 +28,7 @@ namespace OurTextEditor
             services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<ICurrentFileChangeBroadcastService, CurrentFileChangeBroadcastService>();
             services.AddSingleton<IOpenFilesChangeBroadcastService, OpenFilesChangeBroadcastService>();
+            services.AddSingleton<IFileContentChangeBroadcastService, FileContentChangeBroadcastService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

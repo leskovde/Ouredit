@@ -54,5 +54,10 @@ namespace Components.Models
         {
             throw new NotImplementedException();
         }
+
+        public override void Clear()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
