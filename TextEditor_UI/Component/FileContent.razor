@@ -1,12 +1,23 @@
-﻿@*
+﻿@using Components.Models
+@*
     Current file content
 *@
 
 <div id="text-box" contenteditable="true">
-    Content of the file @CurrentFileName
+    #DEBUG: Content of the file @CurrentFilePath <br/>
+    ---#DEBUG Start---@_fileContent---#DEBUG End---
 </div>
 
 @code{
     [Parameter]
-    public string CurrentFileName { get; set; }
+    public string CurrentFilePath { get; set; }
+
+    private string _fileContent;
+
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine($"#DEBUG: Updating the text box content to the {CurrentFilePath} file.");
+        _fileContent = ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(CurrentFilePath).GetBufferContent();
+    }
+
 }

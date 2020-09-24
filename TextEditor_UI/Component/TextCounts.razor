@@ -1,0 +1,24 @@
+﻿@using Components.Models
+<div class="container">
+    Ln 1, Col 1 <br />
+    Characters: @_characterCount, Words: @_wordCount, Lines: @_lineCount
+</div>
+
+@code {
+    [Parameter]
+    public string CurrentFilePath { get; set; }
+
+    private int _characterCount;
+    private int _wordCount;
+    private int _lineCount;
+
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine($"#DEBUG: Updating text counts of the {CurrentFilePath} file.");
+        var buffer = ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(CurrentFilePath);
+
+        _characterCount = buffer.Counter.CharacterCount;
+        _wordCount = buffer.Counter.WordCount;
+        _lineCount = buffer.Counter.LineCount;
+    }
+}

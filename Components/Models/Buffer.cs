@@ -12,7 +12,7 @@ namespace Components.Models
     public abstract class Buffer : IDisposable
     {
         public File FileInstance { get; }
-        public TextCounter Counter { get; }
+        public TextCounter Counter { get; protected set; }
         protected GapBuffer Storage;
         protected static object Mutex = new object();
         

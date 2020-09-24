@@ -1,52 +1,66 @@
 ﻿@page "/"
 
+@using System.Threading
 @using Components;
 @using Components.Models;
+@using ElectronNET.API
 @using OurTextEditor.Component;
 
-
-<link rel="stylesheet" href="~/css/index.css" />
+@inject ICurrentFileChangeBroadcastService CurrentFileService
+@inject IOpenFilesChangeBroadcastService OpenFilesService
+@implements IDisposable
 
 <body class="index">
     <div class="container">
-        <div id="files-ribbon">
-            <!--
-                Print all file names kept in the application state.
-                ! This action is only performed once. For dynamic file tab changes use the functions
-                and ipc channels provided in site.js !
-            -->
-
-            @foreach (var name in fileNames)
-            {
-                <button class="file-tab" onclick="changeToSelected(this)">@name</button>
-            }
-
-        </div>
+        <FilesRibbon FilePaths="@_openFilePaths" CurrentFilePath="@CurrentFilePath" />
         <div id="text-box-refresh">
-            <FileContent  CurrentFileName="@Title"/>
+            <FileContent CurrentFilePath="@CurrentFilePath" />
         </div>
     </div>
 </body>
 
 <footer class="footer">
-    <div class="container">
-        Ln 1, Col 1 <br />
-        Characters: 0, Words: 0
-    </div>
+    <TextCounts CurrentFilePath="@CurrentFilePath"/>
 </footer>
 
 @code{
     // TODO: The title should be changed to the currently selected file.
     //probably change to component and get the real title by passing the argument in some way
-    [Parameter]
-    public string Title { get; set; }
+    public string CurrentFilePath { get; set; }
 
-    private IEnumerable<string> fileNames;
+    private List<string> _openFilePaths;
 
     protected override void OnInitialized()
     {
-        Title = MockFunctionality.GetMockFileName();
-        fileNames = Components.Models.ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames();
+        // TODO: Remove this sleep.
+        Thread.Sleep(5000);
+
+        CurrentFileService.OnCurrentFileChanged += CurrentFileChanged;
+        OpenFilesService.OnOpenFilesChanged += OpenFilesChanged;
+
+        CurrentFilePath = CurrentFileService.GetCurrentValue();
+        _openFilePaths = ApplicationState.Instance.FileHandlerInstance.GetOpenFileNames();
+    }
+
+    private async void CurrentFileChanged(object sender, CurrentFileChangeArgs args)
+    {
+        CurrentFilePath = args.FilePath;
+
+        await InvokeAsync(() =>
+            base.StateHasChanged());
+    }
+
+    private async void OpenFilesChanged(object sender, OpenFilesChangeArgs args)
+    {
+        _openFilePaths = args.OpenFiles;
+
+        await InvokeAsync(() =>
+            base.StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        CurrentFileService.OnCurrentFileChanged -= CurrentFileChanged;
     }
 }
 
