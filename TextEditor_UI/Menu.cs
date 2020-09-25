@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 
 namespace OurTextEditor
@@ -60,6 +61,7 @@ namespace OurTextEditor
                 }
 
             };
+
             mainWindow.OnClosed += () => { Electron.App.Quit(); };
 
             SetMenu();
@@ -68,6 +70,7 @@ namespace OurTextEditor
         static void SetMenu()
         {
             var encodingCheckedValues = new bool[6];
+            encodingCheckedValues[1] = true;
 
             var indexMenu = new MenuItem[]
             {
@@ -111,7 +114,16 @@ namespace OurTextEditor
                         {
                             Label = "Exit",
                             Accelerator = Commands["Exit"],
-                            Click = () => { Electron.WindowManager.BrowserWindows.First().Close(); }
+                            Click = () =>
+                            {
+                                var openFiles = ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths();
+                                Console.WriteLine("#DEBUG: Serializing: " + string.Join(", ", openFiles));
+
+                                var jsonString = JsonSerializer.Serialize(openFiles);
+                                System.IO.File.WriteAllText(Settings.SettingsHandler.FileHistoryPath, jsonString); 
+
+                                Electron.WindowManager.BrowserWindows.First().Close();
+                            }
                         },
                     }
                 },
@@ -132,31 +144,6 @@ namespace OurTextEditor
                         },
                         new MenuItem
                         {
-                            Label = "[NI]Cut",
-                            Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
-                        },
-                        new MenuItem
-                        {
-                            Label = "[NI]Copy",
-                            Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
-                        },
-                        new MenuItem
-                        {
-                            Label = "[NI]Paste",
-                            Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
-                        },
-                        new MenuItem
-                        {
-                            Label = "[NI]Delete",
-                            Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
-                        },
-                        new MenuItem
-                        {
-                            Label = "[NI]Select All",
-                            Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
-                        },
-                        new MenuItem
-                        {
                             Label = "[NI]Indent",
                             Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
                         },
@@ -168,11 +155,6 @@ namespace OurTextEditor
                         new MenuItem
                         {
                             Label = "[NI]Comment/Uncomment",
-                            Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
-                        },
-                        new MenuItem
-                        {
-                            Label = "[NI]Auto-Completion",
                             Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
                         },
                         new MenuItem
@@ -297,8 +279,6 @@ namespace OurTextEditor
                             Label = "UTF-7",
                             Click = async () =>
                             {
-                                encodingCheckedValues.Clear();
-                                encodingCheckedValues[0] = true;
                                 await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF7));
                             }
                         },
@@ -307,8 +287,6 @@ namespace OurTextEditor
                             Label = "UTF-8",
                             Click = async () =>
                             {
-                                encodingCheckedValues.Clear();
-                                encodingCheckedValues[1] = true;
                                 await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF8));
                             }
                         },
@@ -317,8 +295,6 @@ namespace OurTextEditor
                             Label = "UTF-16 LE",
                             Click = async () =>
                             {
-                                encodingCheckedValues.Clear();
-                                encodingCheckedValues[2] = true;
                                 await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF16LE));
                             }
                         },
@@ -327,8 +303,6 @@ namespace OurTextEditor
                             Label = "UTF-16 BE",
                             Click = async () =>
                             {
-                                encodingCheckedValues.Clear();
-                                encodingCheckedValues[3] = true;
                                 await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF16BE));
                             }
                         },
@@ -337,8 +311,6 @@ namespace OurTextEditor
                             Label = "UTF-32 LE",
                             Click = async () =>
                             {
-                                encodingCheckedValues.Clear();
-                                encodingCheckedValues[4] = true;
                                 await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF32LE));
                             }
                         },
@@ -347,8 +319,6 @@ namespace OurTextEditor
                             Label = "UTF-32 BE",
                             Click = async () =>
                             {
-                                encodingCheckedValues.Clear();
-                                encodingCheckedValues[5] = true;
                                 await CommandInvoker.Instance.Execute(new ConvertEncoding(MenuActions.CurrentFilePath, EncodingType.UTF32BE));
                             }
                         },
@@ -444,18 +414,13 @@ namespace OurTextEditor
                     {
                         new MenuItem
                         {
-                            Label = "[NI]Change Settings",
+                            Label = "Change Settings",
                             Accelerator="F10",
                             Click = async () =>
                             {
                                 var path = $"http://localhost:{BridgeSettings.WebPort}/settings";
 
-                                var settingsWindowOptions = new BrowserWindowOptions
-                                {
-                                    SkipTaskbar = true,
-                                };
-
-                                var settingsWindow = await Electron.WindowManager.CreateWindowAsync(settingsWindowOptions, path);
+                                var settingsWindow = await Electron.WindowManager.CreateWindowAsync(path);
                                 settingsWindow.RemoveMenu();
                             }
                         }
@@ -468,12 +433,7 @@ namespace OurTextEditor
                     {
                         var path = $"http://localhost:{BridgeSettings.WebPort}/shortcuts";
 
-                        var settingsWindowOptions = new BrowserWindowOptions
-                        {
-                            SkipTaskbar = true,
-                        };
-
-                        var settingsWindow = await Electron.WindowManager.CreateWindowAsync(settingsWindowOptions, path);
+                        var settingsWindow = await Electron.WindowManager.CreateWindowAsync(path);
                         settingsWindow.RemoveMenu();
                     }
                 }

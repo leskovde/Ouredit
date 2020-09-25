@@ -249,6 +249,7 @@ button.active.focus { outline: none !important; }
     padding-bottom: 5px;
     font-weight: bold;
     font-size: 14px;
+    background-color: #e0e5e0;
 }
 
 .bContextMenu {

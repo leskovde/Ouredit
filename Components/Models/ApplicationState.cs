@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using Components.Controllers;
 
 namespace Components.Models
@@ -25,6 +26,19 @@ namespace Components.Models
             _fileBuffers = new List<Buffer>();
             FileHandlerInstance = new FileHandler(this);
             SettingsHandlerInstance = new Settings.SettingsHandler();
+
+            if (!System.IO.File.Exists(Settings.SettingsHandler.FileHistoryPath)) return;
+
+            var jsonString =
+                System.IO.File.ReadAllText(Settings.SettingsHandler.FileHistoryPath);
+
+            var filePaths = JsonSerializer.Deserialize<List<string>>(jsonString);
+
+            foreach (var filePath in filePaths)
+            {
+                FileHandlerInstance.OpenFile(filePath);
+                FileHandlerInstance.GetFileBuffer(filePath).FillBufferFromFile();
+            }
         }
 
         /// <summary>
