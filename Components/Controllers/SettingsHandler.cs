@@ -46,6 +46,7 @@ namespace Components.Controllers
         public class SettingsHandler
         {
             public Settings SettingsInstance { get; private set; }
+            public const string FileHistoryPath = @"Settings\fileHistory.json";
             private const string _settingsPath = @"Settings\settingsDump.json";
             private const string _defaultSettingsPath = @"Reference\defaultSettings.json";
 

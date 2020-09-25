@@ -1,33 +1,39 @@
-﻿
-<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">Settings</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>
-
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+﻿<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <ul class="nav flex-column">
         <li class="nav-item px-3">
-            <span class="oi oi-home" aria-hidden="true" @onchange="OnSelectHandller"></span> General
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link" href="settings/editing">
+                <span aria-hidden="true"></span> Editing
             </NavLink>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+            <NavLink class="nav-link" href="settings/newdocument">
+                <span aria-hidden="true"></span> New Document
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="settings/defaultdirectory">
+                <span aria-hidden="true"></span> Default Directory
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="settings/recentfileshistory">
+                <span aria-hidden="true"></span> Recent Files History
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="settings/highlighting">
+                <span aria-hidden="true"></span> Highlighting
             </NavLink>
         </li>
     </ul>
 </div>
 
+<component></component>
+
 @code {
     bool collapseNavMenu = true;
 
-    string component = "general";
+    string component = "editing";
 
     string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
@@ -36,7 +42,7 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
-    private void OnSelectHandller(ChangeEventArgs args)
+    private void OnSelectHandler(ChangeEventArgs args)
     {
         component = args.Value.ToString();
     }

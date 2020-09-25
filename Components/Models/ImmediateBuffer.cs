@@ -20,10 +20,8 @@ namespace Components.Models
             Counter = new TextCounter();
         }
 
-        // TODO: Create an abstraction for the cursor OR get position info in any other way.
         public override void UpdateCursorPosition(int numberOfCharactersFromStart)
         {
-            // MOCK for test purposes.
             BufferPosition = numberOfCharactersFromStart;
         }
 
@@ -190,6 +188,10 @@ namespace Components.Models
             return content ?? string.Empty;
         }
 
+        /// <summary>
+        /// Returns four most frequently used words in the buffer.
+        /// </summary>
+        /// <returns>A list of four most frequent words from the buffer.</returns>
         public override List<string> GetMostFrequentWords()
         {
             WordFrequencies = new Dictionary<string, int>();

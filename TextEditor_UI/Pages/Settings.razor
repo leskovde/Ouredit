@@ -1,6 +1,9 @@
 ﻿@page "/settings"
+@using OurTextEditor.Component;
+@using Components.Models;
 
 <div class="sidebar">
+    <SettingsMenu></SettingsMenu>
 </div>
 
 <div class="main">
@@ -9,41 +12,17 @@
     </div>
 </div>
 
-@*<body class="index">
-    <div class="container">
-       
-
-
-        <h1>Editing</h1>
-        <div class="filler"></div>
-
-        <h1>New Document</h1>
-        <div class="filler"></div>
-
-        <h1>Default Directory</h1>
-        <div class="filler"></div>
-
-        <h1>Recent Files History</h1>
-        <div class="filler"></div>
-
-        <h1>Highlighting</h1>
-        <div class="filler"></div>
-    </div>
-</body>*@
-
 <footer class="footer">
     <div class="container">
-        <button>Reset</button>
-        <button>Save</button>
-        <button>Cancel</button>
+        <button @onclick="ApplicationState.Instance.SettingsHandlerInstance.ResetSettings">Reset</button>
+        <button @onclick="ApplicationState.Instance.SettingsHandlerInstance.SaveSettingsToDisc">Save</button>
+        <button href="javascript:window.close()">Cancel</button>
     </div>
 </footer>
 
-<a id="close" href="javascript:window.close()">Close this Window</a>
-
-@code { 
+@code {
     [Parameter]
-    public string Component{ get; set; }
+    public string Component { get; set; }
 
 
 
