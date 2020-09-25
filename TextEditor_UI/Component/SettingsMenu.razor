@@ -1,36 +1,38 @@
 ﻿<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <ul class="nav flex-column">
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="settings/editing">
-                <span aria-hidden="true"></span> Editing
-            </NavLink>
+            <button @onclick='(e => OnSelectHandler("Editing"))' class="nav-link btn btn" style="color:white">
+                <span aria-hidden="true" ></span> Editing
+            </button>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="settings/newdocument">
+            <button @onclick='(e => OnSelectHandler("NewDocument"))' class="nav-link btn btn" style="color:white">
                 <span aria-hidden="true"></span> New Document
-            </NavLink>
+            </button>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="settings/defaultdirectory">
+            <button @onclick='(e => OnSelectHandler("DefaultDirectory"))' class="nav-link btn" style="color:white">
                 <span aria-hidden="true"></span> Default Directory
-            </NavLink>
+            </button>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="settings/recentfileshistory">
+            <button @onclick='(e => OnSelectHandler("RecentFilesHistory"))' class="nav-link btn" style="color:white">
                 <span aria-hidden="true"></span> Recent Files History
-            </NavLink>
+            </button>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="settings/highlighting">
+            <button @onclick='(e => OnSelectHandler("Highlighting"))' class="nav-link btn" style="color:white">
                 <span aria-hidden="true"></span> Highlighting
-            </NavLink>
+            </button>
         </li>
     </ul>
 </div>
 
-<component></component>
 
 @code {
+    [Parameter]
+    public EventCallback<string> OnComponentSelect { get; set; }
+
     bool collapseNavMenu = true;
 
     string component = "editing";
@@ -42,8 +44,8 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
-    private void OnSelectHandler(ChangeEventArgs args)
+    private void OnSelectHandler(string component)
     {
-        component = args.Value.ToString();
+        OnComponentSelect.InvokeAsync(component);
     }
 }
