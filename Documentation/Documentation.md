@@ -1,6 +1,6 @@
 # Ouredit - Electron-based Text Editor
 
-![ouredit](C:\Users\Denis\Desktop\ouredit.PNG)
+![ouredit](ouredit.PNG)
 
 Ouredit is a portable text editor written in C# using an Electron wrapper. This means that the editor can interact with the user using native elements on all popular platforms.
 
@@ -12,7 +12,7 @@ Ouredit is a portable text editor written in C# using an Electron wrapper. This 
 
 Upon opening, the user is greeted with a newly opened file. This file's name and path are set by default to 'new.txt' in the current directory, i.e. the directory in which Ouredit was launched.
 
-![newFile](C:\Users\Denis\Desktop\newFile.PNG)
+![newFile](newFile.PNG)
 
 The title as well as the file tab ribbon tells the user which files is being edited. In the lower left corner is the text statistics information. This information is updated while interacting with the editor.
 
@@ -26,7 +26,7 @@ The 'File' menu also features options to create, open or close a file tab. Note 
 
 The user can take advantage of some more advanced features implemented into Ouredit. One of those features is the 'Undo', 'Redo' feature. Text inserts or commands can be undone using key shortcuts or launching the command directly from the 'Edit' menu. Note that text inserts and deletes work only when launched using a shortcut.
 
-![suggestions](C:\Users\Denis\Desktop\suggestions.PNG)
+![suggestions](suggestions.PNG)
 
 Ouredit allows the user to see his most frequently used words. The user can take advantage of this in order to get a text suggestion. By typing '@', a context menu is show. A list of up to four words is present inside the context menu, sorted by their frequency.
 
