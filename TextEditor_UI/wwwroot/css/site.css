@@ -245,7 +245,6 @@ button.active.focus { outline: none !important; }
 .footer {
     height: 35px;
     border-top: 1px black;
-    padding: 5px;
     padding-bottom: 5px;
     font-weight: bold;
     font-size: 14px;
