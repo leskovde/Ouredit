@@ -105,8 +105,9 @@
 
     private void CmdOnClick(MouseEventArgs args)
     {
-        GetCursorPosition();
         CmdHideContextMenu();
+
+        GetCursorPosition();
 
         var cursorHandler = CursorPositionChanged;
         cursorHandler?.Invoke(this, new CursorPositionChangeArgs(_cursorPosition));
@@ -114,6 +115,11 @@
 
     private void CmdOnKeyPress(KeyboardEventArgs args)
     {
+        if (args.AltKey || args.CtrlKey)
+        {
+            return;
+        }
+
         GetCursorPosition();
 
         var cursorHandler = CursorPositionChanged;

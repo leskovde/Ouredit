@@ -8,7 +8,7 @@
     -->
     @foreach (var domWrapper in _wrappedFilePaths)
     {
-        <button class="@RenderDomClass(domWrapper)" @onclick="_ => ChangeToSelectedUserSide(domWrapper)">@domWrapper.FileName</button>
+        <button class="@RenderDomClass(domWrapper)" @onclick="_ => ChangeToSelectedUserSide(domWrapper)"><span>@domWrapper.FileName</span></button>
     }
 </div>
 

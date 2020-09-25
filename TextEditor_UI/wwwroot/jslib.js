@@ -4,6 +4,10 @@
     }
 };
 
+function BlazorSetTitle(title) {
+    document.title = title;
+}
+
 var properties = [
     'boxSizing',
     'width',

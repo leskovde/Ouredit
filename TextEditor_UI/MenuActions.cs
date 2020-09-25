@@ -12,7 +12,7 @@ namespace OurTextEditor
 {
     public static class MenuActions
     {
-        public static string CurrentFilePath { get; private set;  } = "new.txt";
+        public static string CurrentFilePath { get; private set; }
 
         /// <summary>
         /// Upon changing the CurrentFilePath, razor components need to be re-rendered.
@@ -88,6 +88,12 @@ namespace OurTextEditor
                 return;
             }
 
+            if (ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths().Contains(filePath))
+            {
+                Electron.Dialog.ShowErrorBox("File Error", "File already exists.");
+                return;
+            }
+
             var task = new Task(() =>
             {
                 try
@@ -97,7 +103,7 @@ namespace OurTextEditor
                     var handler = OpenFilesChanged;
                     handler?.Invoke(ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths(), EventArgs.Empty);
                 }
-                catch (InvalidOperationException e)
+                catch (Exception e)
                 {
                     Electron.Dialog.ShowErrorBox("File Error", "File already exists.");
                     Console.WriteLine(e.StackTrace);
@@ -128,6 +134,12 @@ namespace OurTextEditor
                 return;
             }
 
+            if (ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths().Contains(filePath))
+            {
+                Electron.Dialog.ShowErrorBox("File Error", "File is already open or doesn't exists.");
+                return;
+            }
+
             var task = new Task(() =>
             {
                 try
@@ -138,7 +150,7 @@ namespace OurTextEditor
                     handler?.Invoke(ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths(), EventArgs.Empty);
 
                 }
-                catch (InvalidOperationException e)
+                catch (Exception e)
                 {
                     Electron.Dialog.ShowErrorBox("File Error", "File is already open or doesn't exists.");
                     Console.WriteLine(e.StackTrace);

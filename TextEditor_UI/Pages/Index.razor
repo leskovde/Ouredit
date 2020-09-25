@@ -1,9 +1,8 @@
 ﻿@page "/"
 
+@using System.IO
 @using System.Threading
-@using Components;
 @using Components.Models;
-@using ElectronNET.API
 @using OurTextEditor.Component;
 
 @inject ICurrentFileChangeBroadcastService CurrentFileService
@@ -11,8 +10,10 @@
 @inject IJSRuntime JsRuntime
 @implements IDisposable
 
-<body class="index">
-    <div class="container">
+<PageTitle Value="@GetPageTitle()" />
+
+<body>
+    <div>
         <FilesRibbon FilePaths="@_openFilePaths" CurrentFilePath="@CurrentFilePath" />
         <div id="text-box-refresh">
             <FileContent CurrentFilePath="@CurrentFilePath" />
@@ -20,7 +21,7 @@
     </div>
 </body>
 
-<footer class="footer">
+<footer>
     <TextCounts CurrentFilePath="@CurrentFilePath"/>
 </footer>
 
@@ -33,17 +34,21 @@
 
     protected override void OnInitialized()
     {
-        // TODO: Remove this sleep.
-        Thread.Sleep(5000);
-
         CursorInterop.JsRuntime = JsRuntime;
 
         CurrentFileService.OnCurrentFileChanged += CurrentFileChanged;
         OpenFilesService.OnOpenFilesChanged += OpenFilesChanged;
 
-        CurrentFilePath = CurrentFileService.GetCurrentValue();
+        while (CurrentFilePath == default)
+        {
+            Thread.Sleep(500);
+            CurrentFilePath = CurrentFileService.GetCurrentValue();
+        }
+
         _openFilePaths = ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths();
     }
+
+    private string GetPageTitle() => $"{Path.GetFileName(CurrentFilePath)} - Ouredit";
 
     /// <summary>
     /// Updates the current file tab upon consuming a CurrentFileChange event.
