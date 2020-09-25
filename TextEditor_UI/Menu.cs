@@ -275,6 +275,16 @@ namespace OurTextEditor
                             Label = "[NI]Unfold All",
                             Click = async () => { await Electron.Dialog.ShowMessageBoxAsync("Mock"); }
                         },
+                        new MenuItem
+                        {
+                            Type = MenuType.separator
+                        },
+                        new MenuItem
+                        {
+                            Label = "Open Developer Tools",
+                            Accelerator = "CmdOrCtrl+I",
+                            Click = () => Electron.WindowManager.BrowserWindows.First().WebContents.OpenDevTools()
+                        },
                     }
                 },
                 new MenuItem
@@ -467,7 +477,6 @@ namespace OurTextEditor
                         settingsWindow.RemoveMenu();
                     }
                 }
-
             };
 
             Electron.Menu.SetApplicationMenu(indexMenu);
