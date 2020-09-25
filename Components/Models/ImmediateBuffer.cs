@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Components.Controllers;
 
@@ -186,6 +188,41 @@ namespace Components.Models
             }
 
             return content ?? string.Empty;
+        }
+
+        public override List<string> GetMostFrequentWords()
+        {
+            WordFrequencies = new Dictionary<string, int>();
+
+            var previousChar = '\0';
+            var stringBuilder = new StringBuilder();
+
+            foreach (var character in GetBufferContent())
+            {
+                if (!Char.IsWhiteSpace(character))
+                {
+                    stringBuilder.Append(character);
+                }
+                else if (!Char.IsWhiteSpace(previousChar))
+                {
+                    var word = stringBuilder.ToString();
+
+                    if (WordFrequencies.ContainsKey(word))
+                    {
+                        WordFrequencies[word]++;
+                    }
+                    else
+                    {
+                        WordFrequencies.Add(word, 1);
+                    }
+
+                    stringBuilder.Clear();
+                }
+
+                previousChar = character;
+            }
+
+            return WordFrequencies.OrderByDescending(x => x.Value).Take(4).Select(x => x.Key).ToList();
         }
 
         /// <summary>

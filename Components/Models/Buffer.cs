@@ -14,6 +14,7 @@ namespace Components.Models
         public File FileInstance { get; }
         public TextCounter Counter { get; protected set; }
         protected GapBuffer Storage;
+        protected Dictionary<string, int> WordFrequencies;
         protected static object Mutex = new object();
         
         // Position in file.
@@ -27,7 +28,8 @@ namespace Components.Models
         {
             FileInstance = file;
             Storage = new GapBuffer();
-            
+            WordFrequencies = new Dictionary<string, int>();
+
             LinePosition = 0;
             ByteOffset = 0;
 
@@ -44,6 +46,7 @@ namespace Components.Models
         public abstract void DumpBufferToCurrentFile();
         public abstract void DumpBufferToFile(File file);
         public abstract string GetBufferContent();
+        public abstract List<string> GetMostFrequentWords();
         public abstract void Clear();
 
         protected virtual void Dispose(bool disposing)
