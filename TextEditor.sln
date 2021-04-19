@@ -3,11 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30225.117
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextEditor", "TextEditor\TextEditor.csproj", "{456EC073-C98E-4477-94DF-D954AD092174}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components", "Components\Components.csproj", "{6BF95B37-3BFA-4B0A-AFDF-9814A4A6BBA7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComponentsUnitTests", "ComponentsUnitTests\ComponentsUnitTests.csproj", "{1280C43A-C562-4E45-83E4-3322DFF53DA0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComponentsUnitTests", "ComponentsUnitTests\ComponentsUnitTests.csproj", "{1280C43A-C562-4E45-83E4-3322DFF53DA0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OurTextEditor", "TextEditor_UI\OurTextEditor.csproj", "{C9D4790C-EE09-48D5-9AAF-B586A6001224}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6BF95B37-3BFA-4B0A-AFDF-9814A4A6BBA7} = {6BF95B37-3BFA-4B0A-AFDF-9814A4A6BBA7}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +18,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{456EC073-C98E-4477-94DF-D954AD092174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{456EC073-C98E-4477-94DF-D954AD092174}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{456EC073-C98E-4477-94DF-D954AD092174}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{456EC073-C98E-4477-94DF-D954AD092174}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6BF95B37-3BFA-4B0A-AFDF-9814A4A6BBA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6BF95B37-3BFA-4B0A-AFDF-9814A4A6BBA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BF95B37-3BFA-4B0A-AFDF-9814A4A6BBA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -27,6 +26,10 @@ Global
 		{1280C43A-C562-4E45-83E4-3322DFF53DA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1280C43A-C562-4E45-83E4-3322DFF53DA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1280C43A-C562-4E45-83E4-3322DFF53DA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9D4790C-EE09-48D5-9AAF-B586A6001224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9D4790C-EE09-48D5-9AAF-B586A6001224}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9D4790C-EE09-48D5-9AAF-B586A6001224}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9D4790C-EE09-48D5-9AAF-B586A6001224}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -10,7 +10,12 @@ namespace Components.Models
     {
         public LazyBuffer(File file) : base(file) { }
 
-        public override void UpdateCursorPosition()
+        public override void UpdateCursorPosition(int numberOfCharactersFromStart)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override (int, int) ParseCursorPosition()
         {
             throw new NotImplementedException();
         }
@@ -46,6 +51,21 @@ namespace Components.Models
         }
 
         public override void DumpBufferToFile(File file)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GetBufferContent()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<string> GetMostFrequentWords()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Clear()
         {
             throw new NotImplementedException();
         }

@@ -1,0 +1,70 @@
+﻿@page "/settings"
+@using OurTextEditor.Component;
+@using Components.Models;
+@using OurTextEditor.Component.Settings;
+
+<body>
+    <div>
+        <div class="sidebar" style="display:inline-block; height: 100%">
+            <SettingsMenu OnComponentSelect="OnComponentSelect"></SettingsMenu>
+        </div>
+        <div style="        display: inline-block;
+        height: 100%
+">
+
+            @if (settingsBody[0])
+            {
+        <Editing></Editing> }
+    else @if (settingsBody[1])
+           {
+        <NewDocument></NewDocument>}
+
+    else @if (settingsBody[2])
+           {
+        <DefaultDirectory></DefaultDirectory>}
+    else @if (settingsBody[3])
+           {
+        <RecentFilesHistory></RecentFilesHistory>}
+    else @if (settingsBody[4])
+           {
+        <Highlighting></Highlighting>}
+        </div>
+</div>
+</body>
+
+<footer class="footer">
+    <div class="container">
+        <button @onclick="ApplicationState.Instance.SettingsHandlerInstance.ResetSettings">Reset</button>
+        <button @onclick="ApplicationState.Instance.SettingsHandlerInstance.SaveSettingsToDisc">Save</button>
+        <button href="javascript:window.close()">Cancel</button>
+    </div>
+</footer>
+
+@code { private bool[] settingsBody = new bool[5];
+
+    private void OnComponentSelect(string component)
+    {
+        switch (component)
+        {
+            case "Editing":
+                settingsBody = new bool[5];
+                settingsBody[0] = true;
+                break;
+            case "NewDocument":
+                settingsBody = new bool[5];
+                settingsBody[1] = true;
+                break;
+            case "DefaultDirectory":
+                settingsBody = new bool[5];
+                settingsBody[2] = true;
+                break;
+            case "RecentFilesHistory":
+                settingsBody = new bool[5];
+                settingsBody[3] = true;
+                break;
+            case "Highlighting":
+                settingsBody = new bool[5];
+                settingsBody[4] = true;
+                break;
+        }
+    } }

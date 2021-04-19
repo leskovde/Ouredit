@@ -1,0 +1,168 @@
+﻿@using System.Security.Cryptography
+@using Components.Models
+@using Buffer = Components.Models.Buffer
+@inject IFileContentChangeBroadcastService FileContentService
+@inject ICursorPositionChangeBroadcastService CursorPositionService
+@implements IDisposable
+
+@*
+    Current file content
+*@
+
+<ContextMenu CurrentFilePath="@CurrentFilePath" ContextMenuStyle="@ContextMenuStyle"></ContextMenu>
+
+<textarea id="text-box" 
+          @bind="_fileContent" 
+          @onkeydown="@CmdOnKeyPress" 
+          @onclick="CmdOnClick" 
+          @oninput="async ui =>
+                    {
+                        _fileContent = (string)ui.Value;
+
+                        var contentHandler = FileContentChanged;
+                        contentHandler?.Invoke(this, new FileContentChangeArgs(_currentBuffer, _fileContent));
+                    }">
+</textarea>
+
+@*
+    ContentEditable container - looks better, but doesn't preserve encoding.
+
+<div @ref="editorEdit" id="text-box" @onkeydown="GetContent" contenteditable>
+    @((MarkupString)_fileContent)
+</div>
+*@
+
+@functions
+{
+    @*
+        Content getter for the ContentEditable container.
+    async Task GetContent()
+    {
+        var tmp = await JS.InvokeAsync<string>("JsLib.getInnerHtml", editorEdit);
+        value = tmp.Replace("<!--!-->", string.Empty);
+        value = value.Replace("<div>", string.Empty);
+        value = value.Replace("<br>", "\n");
+        value = value.Replace("</div>", "\n");
+        value = value.Replace("&nbsp;", " ");
+
+        Console.WriteLine($"#DEBUG: Text box value has changed.\n" +
+                          $"{(MarkupString)value}");
+    }
+    *@
+
+}
+
+@code{
+    [Parameter]
+    public string CurrentFilePath { get; set; }
+    public string ContextMenuStyle { get; set; } = "display:none;";
+
+    private int _cursorPosition;
+    private string _fileContent;
+    private Buffer _currentBuffer;
+
+    @*
+        Reference for the ContentEditable container.
+    private ElementReference editorEdit;
+    *@
+
+    protected override void OnInitialized()
+    {
+        FileContentService.OnFileContentChanged += MenuActions.FileContentChanged;
+        CursorPositionService.OnCursorPositionChanged += MenuActions.CursorPositionChanged;
+    }
+    
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine($"#DEBUG: Updating the text box content to the {CurrentFilePath} file.");
+        _currentBuffer = ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(CurrentFilePath);
+        _fileContent = _currentBuffer.GetBufferContent();
+    }
+    
+    public static event EventHandler<FileContentChangeArgs> FileContentChanged = FileContentChangeNotify;
+    public static event EventHandler<CursorPositionChangeArgs> CursorPositionChanged = CursorPositionChangeNotify;
+
+    /// <summary>
+    /// Serves as a notification message for the FileContentChangeService.
+    /// </summary>
+    public static void FileContentChangeNotify(object sender, FileContentChangeArgs e)
+    {
+        Console.WriteLine($"#DEBUG: File content has been changed to: {e.FileContent}. Sending the notification further.");
+    }
+
+    /// <summary>
+    /// Serves as a notification message for the FileContentChangeService.
+    /// </summary>
+    public static void CursorPositionChangeNotify(object sender, CursorPositionChangeArgs e)
+    {
+        Console.WriteLine($"#DEBUG: Cursor position has been changed to: {e.CursorPosition}. Sending the notification further.");
+    }
+
+    private async void GetCursorPosition()
+    {
+        _cursorPosition = await CursorInterop.GetCharCursorPosition("text-box");
+    }
+
+    private void CmdOnClick(MouseEventArgs args)
+    {
+        CmdHideContextMenu();
+
+        GetCursorPosition();
+
+        var cursorHandler = CursorPositionChanged;
+        cursorHandler?.Invoke(this, new CursorPositionChangeArgs(_cursorPosition));
+    }
+
+    private void CmdOnKeyPress(KeyboardEventArgs args)
+    {
+        if (args.AltKey || args.CtrlKey)
+        {
+            return;
+        }
+
+        GetCursorPosition();
+
+        var cursorHandler = CursorPositionChanged;
+        cursorHandler?.Invoke(this, new CursorPositionChangeArgs(_cursorPosition));
+
+        if (args.Key == "@")
+        {
+            CmdDisplayContextMenu("text-box");
+        }
+        else
+        {
+            CmdHideContextMenu();
+        }
+    }
+
+    public async void CmdDisplayContextMenu(string elementId)
+    {
+        var y = (int)await CursorInterop.GetElementActualTop(elementId);
+        var x = (int)await CursorInterop.GetElementActualLeft(elementId);
+
+        var coordinates = await CursorInterop.GetCaretCoordinates("text-box");
+        var coordinatesArray = coordinates.Split(',');
+
+        y += int.Parse(coordinatesArray[0]) + 30;
+        x += int.Parse(coordinatesArray[1]) - 20;
+
+        ContextMenuStyle = "width:200px;height:100px;top:" + y + "px;" + "left:" + x + "px";
+
+        this.StateHasChanged();
+    }
+
+    public void CmdHideContextMenu()
+    {
+        if (!ContextMenuStyle.Equals("display:none;"))
+        {
+            ContextMenuStyle = "display:none;";
+        }
+    }
+
+    public void Dispose()
+    {
+        FileContentService.OnFileContentChanged -= MenuActions.FileContentChanged;
+        CursorPositionService.OnCursorPositionChanged -= MenuActions.CursorPositionChanged;
+    }
+
+}

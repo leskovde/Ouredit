@@ -1,0 +1,42 @@
+﻿@page "/shortcuts"
+@using Components.Controllers;
+@inject ShortcutGenerator ShortcutsController;
+
+<h4>Change Shortcuts</h4>
+<ul>
+    @foreach (var command in commandList)
+    {
+        <li>
+            <b>@command.Key</b>: @command.Value
+            <input type="text" @oninput="@((e) => { newValue=(string)e.Value;})"  />
+            <button class="btn btn-light" @onclick="@(e => ChangeShortcutHandller(command.Key))">Change</button>
+        </li>
+     }
+</ul>
+
+    @code {
+
+        private Dictionary<string, string> commandList = new Dictionary<string, string>();
+        private string newValue;
+
+        protected override async Task OnInitializedAsync()
+        {
+            commandList = await ShortcutsController.GetCurrentCommandListAsync();
+        }
+
+        private async Task ChangeShortcutHandller(string command)
+        {
+            if (!string.IsNullOrEmpty(newValue))
+            {
+                if (await ShortcutsController.ChangeShortcutAsync(command, newValue))
+                {
+                    commandList = await ShortcutsController.GetCurrentCommandListAsync();
+                    Menu.RaiseEvent(this);
+                }
+            }
+            else
+            {
+                //TODO: toast errors
+            }
+        }
+    }

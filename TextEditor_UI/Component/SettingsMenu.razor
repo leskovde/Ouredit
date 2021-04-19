@@ -1,0 +1,51 @@
+﻿<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <button @onclick='(e => OnSelectHandler("Editing"))' class="nav-link btn btn" style="color:white">
+                <span aria-hidden="true" ></span> Editing
+            </button>
+        </li>
+        <li class="nav-item px-3">
+            <button @onclick='(e => OnSelectHandler("NewDocument"))' class="nav-link btn btn" style="color:white">
+                <span aria-hidden="true"></span> New Document
+            </button>
+        </li>
+        <li class="nav-item px-3">
+            <button @onclick='(e => OnSelectHandler("DefaultDirectory"))' class="nav-link btn" style="color:white">
+                <span aria-hidden="true"></span> Default Directory
+            </button>
+        </li>
+        <li class="nav-item px-3">
+            <button @onclick='(e => OnSelectHandler("RecentFilesHistory"))' class="nav-link btn" style="color:white">
+                <span aria-hidden="true"></span> Recent Files History
+            </button>
+        </li>
+        <li class="nav-item px-3">
+            <button @onclick='(e => OnSelectHandler("Highlighting"))' class="nav-link btn" style="color:white">
+                <span aria-hidden="true"></span> Highlighting
+            </button>
+        </li>
+    </ul>
+</div>
+
+
+@code {
+    [Parameter]
+    public EventCallback<string> OnComponentSelect { get; set; }
+
+    bool collapseNavMenu = true;
+
+    string component = "editing";
+
+    string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void OnSelectHandler(string component)
+    {
+        OnComponentSelect.InvokeAsync(component);
+    }
+}

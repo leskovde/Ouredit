@@ -34,7 +34,7 @@ namespace Components
     /// A container holding a table of BufferFactories.
     /// </summary>
     [Leskovar]
-    internal static class BufferFactoryGetter
+    internal static class BufferInstantiator
     {
         private static readonly Dictionary<BufferType, BufferFactory> Factories = new Dictionary<BufferType, BufferFactory>
             {
@@ -43,7 +43,7 @@ namespace Components
             };
 
         /// <summary>
-        /// Returns an instant of a Buffer based on a given buffer type.
+        /// Returns an instance of a Buffer based on a given buffer type.
         /// </summary>
         /// <param name="bufferType">The type of the instantiated buffer.</param>
         /// <param name="file">The file over which the buffer operates.</param>

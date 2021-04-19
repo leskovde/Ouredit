@@ -1,0 +1,81 @@
+﻿@page "/"
+
+@using System.IO
+@using System.Threading
+@using Components.Models;
+@using OurTextEditor.Component;
+
+@inject ICurrentFileChangeBroadcastService CurrentFileService
+@inject IOpenFilesChangeBroadcastService OpenFilesService
+@inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<PageTitle Value="@GetPageTitle()" />
+
+<body>
+    <div>
+        <FilesRibbon FilePaths="@_openFilePaths" CurrentFilePath="@CurrentFilePath" />
+        <div id="text-box-refresh">
+            <FileContent CurrentFilePath="@CurrentFilePath" />
+        </div>
+    </div>
+</body>
+
+<footer>
+    <TextCounts CurrentFilePath="@CurrentFilePath"/>
+</footer>
+
+@code{
+    // TODO: The title should be changed to the currently selected file.
+    //probably change to component and get the real title by passing the argument in some way
+    public string CurrentFilePath { get; set; }
+
+    private List<string> _openFilePaths;
+
+    protected override void OnInitialized()
+    {
+        CursorInterop.JsRuntime = JsRuntime;
+
+        CurrentFileService.OnCurrentFileChanged += CurrentFileChanged;
+        OpenFilesService.OnOpenFilesChanged += OpenFilesChanged;
+
+        while (CurrentFilePath == default)
+        {
+            Thread.Sleep(500);
+            CurrentFilePath = CurrentFileService.GetCurrentValue();
+        }
+
+        _openFilePaths = ApplicationState.Instance.FileHandlerInstance.GetOpenFilePaths();
+    }
+
+    private string GetPageTitle() => $"{Path.GetFileName(CurrentFilePath)} - Ouredit";
+
+    /// <summary>
+    /// Updates the current file tab upon consuming a CurrentFileChange event.
+    /// </summary>
+    private async void CurrentFileChanged(object sender, CurrentFileChangeArgs args)
+    {
+        CurrentFilePath = args.FilePath;
+
+        await InvokeAsync(() =>
+            base.StateHasChanged());
+    }
+
+    /// <summary>
+    /// Updates the open files ribbon upon consuming an OpenFilesChange event.
+    /// </summary>
+    private async void OpenFilesChanged(object sender, OpenFilesChangeArgs args)
+    {
+        _openFilePaths = args.OpenFiles;
+
+        await InvokeAsync(() =>
+            base.StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        CurrentFileService.OnCurrentFileChanged -= CurrentFileChanged;
+        OpenFilesService.OnOpenFilesChanged -= OpenFilesChanged;
+    }
+}
+

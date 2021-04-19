@@ -1,0 +1,25 @@
+﻿@using Components.Models
+<div id="MyContextMenu" class="bContextMenu" style="@ContextMenuStyle">
+    @foreach (var word in _mostFrequentWords)
+    {
+        @word<br/>
+    }
+</div>
+
+@code
+{
+
+    [Parameter]
+    public string ContextMenuStyle { get; set; }
+
+    [Parameter]
+    public string CurrentFilePath { get; set; }
+
+    private List<string> _mostFrequentWords = new List<string>();
+
+    protected override void OnParametersSet()
+    {
+        _mostFrequentWords = ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(CurrentFilePath).GetMostFrequentWords();
+    }
+
+}

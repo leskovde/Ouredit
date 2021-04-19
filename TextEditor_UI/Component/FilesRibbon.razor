@@ -1,0 +1,96 @@
+﻿@using System.IO
+@using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments
+<div id="files-ribbon">
+    <!--
+    Print all file names kept in the application state.
+    ! This action is only performed once. For dynamic file tab changes use the functions
+    and ipc channels provided in site.js !
+    -->
+    @foreach (var domWrapper in _wrappedFilePaths)
+    {
+        <button class="@RenderDomClass(domWrapper)" @onclick="_ => ChangeToSelectedUserSide(domWrapper)"><span>@domWrapper.FileName</span></button>
+    }
+</div>
+
+@functions
+{
+
+    private static List<DomWrapper> GetDomWrappedPaths(List<string> filePaths)
+    {
+        var wrappers = new List<DomWrapper>();
+
+        for (var i = 0; i < filePaths.Count; i++)
+        {
+            wrappers.Add(new DomWrapper(i, filePaths[i]));
+        }
+
+        return wrappers;
+    }
+
+    void ChangeToSelectedUserSide(DomWrapper element)
+    {
+        if (CurrentFilePath != element.FilePath)
+        {
+            MenuActions.SetCurrentFilePath(element.FilePath);
+        }
+    }
+
+    void ChangeToSelectedInternalSide(DomWrapper element, IEnumerable<DomWrapper> allElements)
+    {
+        if (element.DomClasses.Contains("selected"))
+        {
+            return;
+        }
+
+        foreach (var otherElement in allElements)
+        {
+            otherElement.DomClasses.RemoveAll(x => x == "selected");
+        }
+
+        Console.WriteLine("#DEBUG: Selecting file name: " + element.FilePath);
+        element.DomClasses.Add("selected");
+
+        RenderDomClass(element);
+    }
+
+    private static string RenderDomClass(DomWrapper element)
+    {
+        Console.WriteLine("#DEBUG: The file has classes: " + string.Join(" ", element.DomClasses));
+        return string.Join(" ", element.DomClasses);
+    }
+}
+
+@code {
+
+    [Parameter]
+    public List<string> FilePaths { get; set; }
+
+    [Parameter]
+    public string CurrentFilePath { get; set; }
+
+    private List<DomWrapper> _wrappedFilePaths;
+
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine("#DEBUG: Rewrapping file names.");
+        _wrappedFilePaths = GetDomWrappedPaths(FilePaths);
+        ChangeToSelectedInternalSide(_wrappedFilePaths.First(x => x.FilePath == CurrentFilePath), _wrappedFilePaths);
+    }
+
+    private class DomWrapper
+    {
+        public int Id;
+        public readonly List<string> DomClasses;
+        public readonly string FilePath;
+        public readonly string FileName;
+
+        public DomWrapper(int id, string path)
+        {
+            Id = id;
+            DomClasses = new List<string>() { "file-tab" };
+            FilePath = path;
+            FileName = Path.GetFileName(path);
+        }
+    }
+
+}

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using Components.Controllers;
 
 namespace Components.Models
 {
@@ -8,16 +11,50 @@ namespace Components.Models
     /// A wrapper object for the text keeping data structure. Keeps the entire text file in the memory.
     /// </summary>
     [Leskovar]
-    internal class ImmediateBuffer : Buffer
+    public class ImmediateBuffer : Buffer
     {
         //private const int _blockSize = 4096 * 1024;
 
-        public ImmediateBuffer(File file) : base(file) { }
-
-        // TODO: Create an abstraction for the cursor OR get position info in any other way.
-        public override void UpdateCursorPosition()
+        public ImmediateBuffer(File file) : base(file)
         {
-            throw new NotImplementedException();
+            Counter = new TextCounter();
+        }
+
+        public override void UpdateCursorPosition(int numberOfCharactersFromStart)
+        {
+            BufferPosition = numberOfCharactersFromStart;
+        }
+
+        public override (int, int) ParseCursorPosition()
+        {
+            var eolCount = 1;
+            var columns = 1;
+
+            if (BufferPosition == 0) return (eolCount, columns);
+
+            var content = Storage.GetText(0, Math.Min(BufferPosition, Storage.GetLength() -1)) ?? string.Empty;
+            var previousChar = '\0';
+
+            foreach (var character in content)
+            {
+                columns++;
+
+                if (character == '\n' && previousChar != '\r')
+                {
+                    columns = 1;
+                    eolCount++;
+                }
+
+                if (character == '\r')
+                {
+                    columns = 1;
+                    eolCount++;
+                }
+
+                previousChar = character;
+            }
+
+            return (eolCount, columns);
         }
 
         /// <summary>
@@ -26,8 +63,12 @@ namespace Components.Models
         /// <param name="content">The character to be inserted.</param>
         public override void InsertAtCursor(char content)
         {
-            _storage.Insert(content, _bufferPosition);
-            _bufferPosition++;
+            lock (Mutex)
+            {
+                Storage.Insert(content, BufferPosition);
+                Counter.UpdateCountsAdd(content);
+                BufferPosition++;
+            }
         }
 
         /// <summary>
@@ -36,8 +77,12 @@ namespace Components.Models
         /// <param name="content">The string to be inserted.</param>
         public override void InsertAtCursor(string content)
         {
-            _storage.Insert(content, _bufferPosition);
-            _bufferPosition += content.Length;
+            lock (Mutex)
+            {
+                Storage.Insert(content, BufferPosition);
+                Counter.CountFileContent(this);
+                BufferPosition += content.Length;
+            }
         }
 
         /// <summary>
@@ -46,8 +91,13 @@ namespace Components.Models
         /// <param name="numberOfCharacters">The number of characters to be removed.</param>
         public override void DeleteAtCursorLeft(int numberOfCharacters)
         {
-            _storage.Delete(_bufferPosition - numberOfCharacters, _bufferPosition);
-            _bufferPosition -= numberOfCharacters;
+            lock (Mutex)
+            {
+                var content = Storage.GetText(BufferPosition - numberOfCharacters, BufferPosition);
+                Storage.Delete(BufferPosition - numberOfCharacters, BufferPosition);
+                Counter.UpdateCountsRemove(content);
+                BufferPosition -= numberOfCharacters;
+            }
         }
 
         /// <summary>
@@ -56,7 +106,12 @@ namespace Components.Models
         /// <param name="numberOfCharacters">The number of characters to be removed.</param>
         public override void DeleteAtCursorRight(int numberOfCharacters)
         {
-            _storage.Delete(_bufferPosition, _bufferPosition + numberOfCharacters);
+            lock (Mutex)
+            {
+                var content = Storage.GetText(BufferPosition, BufferPosition + numberOfCharacters);
+                Storage.Delete(BufferPosition, BufferPosition + numberOfCharacters);
+                Counter.UpdateCountsRemove(content);
+            }
         }
 
         /// <summary>
@@ -64,40 +119,128 @@ namespace Components.Models
         /// </summary>
         public override void FillBufferFromFile()
         {
-            if (_storage.GetLength() > 0)
+            lock (Mutex)
             {
-                _storage.Delete(0, _storage.GetLength() - 1);
+                if (Storage.GetLength() > 0)
+                {
+                    Storage.Delete(0, Storage.GetLength() - 1);
+                }
+
+                /*
+                for (var i = 0; i <= _file.FileSize / blockSize; i++)
+                {
+                    var fileContent = _file.ReadFromFile(i * blockSize, blockSize); 
+                    _storage.Insert(fileContent, i * blockSize);
+                }
+                */
+
+                var fileContent = FileInstance.ReadFromFile(0, (int)FileInstance.FileSize);
+                Storage.Insert(fileContent, 0);
+                Counter.CountFileContent(this);
             }
-
-            /*
-            for (var i = 0; i <= _file.FileSize / blockSize; i++)
-            {
-                var fileContent = _file.ReadFromFile(i * blockSize, blockSize); 
-                _storage.Insert(fileContent, i * blockSize);
-            }
-            */
-
-            var fileContent = FileInstance.ReadFromFile(0, (int)FileInstance.FileSize);
-            _storage.Insert(fileContent, 0);
-
         }
 
         /// <summary>
-        /// Saves the content of the buffer to the current file.
+        /// Saves the content of the buffer to the current file and clears it beforehand.
         /// </summary>
         public override void DumpBufferToCurrentFile()
         {
-            var bufferContent = _storage.GetText(0, _storage.GetLength() - 1);
+            string bufferContent;
+
+            lock (Mutex)
+            {
+                bufferContent = Storage.GetText(0, Storage.GetLength() - 1);
+            }
+
+            FileInstance.Clear();
             FileInstance.WriteToFile(0, bufferContent);
         }
 
         /// <summary>
-        /// Saves the content of the buffer to a given file.
+        /// Saves the content of the buffer to a given file and clears it beforehand.
         /// </summary>
         public override void DumpBufferToFile(File file)
         {
-            var bufferContent = _storage.GetText(0, _storage.GetLength() - 1);
+            string bufferContent;
+
+            lock (Mutex)
+            {
+                bufferContent = Storage.GetText(0, Storage.GetLength() - 1);
+            }
+
+            file.Clear();
             file.WriteToFile(0, bufferContent);
+        }
+
+        /// <summary>
+        /// Gets the entire text stored in the buffer.
+        /// </summary>
+        /// <returns>A string representation of the text stored in the buffer.</returns>
+        public override string GetBufferContent()
+        {
+            string content;
+
+            lock (Mutex)
+            {
+                content = Storage.GetText(0, Storage.GetLength() - 1);
+            }
+
+            return content ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Returns four most frequently used words in the buffer.
+        /// </summary>
+        /// <returns>A list of four most frequent words from the buffer.</returns>
+        public override List<string> GetMostFrequentWords()
+        {
+            WordFrequencies = new Dictionary<string, int>();
+
+            var previousChar = '\0';
+            var stringBuilder = new StringBuilder();
+
+            foreach (var character in GetBufferContent())
+            {
+                if (!Char.IsWhiteSpace(character))
+                {
+                    stringBuilder.Append(character);
+                }
+                else if (!Char.IsWhiteSpace(previousChar))
+                {
+                    var word = stringBuilder.ToString();
+
+                    if (WordFrequencies.ContainsKey(word))
+                    {
+                        WordFrequencies[word]++;
+                    }
+                    else
+                    {
+                        WordFrequencies.Add(word, 1);
+                    }
+
+                    stringBuilder.Clear();
+                }
+
+                previousChar = character;
+            }
+
+            return WordFrequencies.OrderByDescending(x => x.Value).Take(4).Select(x => x.Key).ToList();
+        }
+
+        /// <summary>
+        /// Clears the storage content and resets the buffer position.
+        /// </summary>
+        public override void Clear()
+        {
+            lock (Mutex)
+            {
+                if (Storage.GetLength() > 0)
+                {
+                    Storage.Delete(0, Storage.GetLength() - 1);
+                }
+
+                BufferPosition = 0;
+            }
         }
     }
 }

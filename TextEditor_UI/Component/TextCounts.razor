@@ -1,0 +1,69 @@
+﻿@using System.Threading
+@using Components.Models
+@inject ICursorPositionChangeBroadcastService CursorPositionService
+@inject IFileContentChangeBroadcastService FileContentService
+@implements IDisposable
+
+<div class="footer">
+    Ln @_cursorLines, Col @_cursorColumns <br />
+    Characters: @_characterCount, Words: @_wordCount, Lines: @_lineCount
+</div>
+
+@code {
+    [Parameter]
+    public string CurrentFilePath { get; set; }
+
+    private int _characterCount;
+    private int _wordCount;
+    private int _lineCount;
+    private int _cursorLines;
+    private int _cursorColumns;
+
+    protected override void OnInitialized()
+    {
+        CursorPositionService.OnCursorPositionChanged += CursorPositionChanged;
+        FileContentService.OnFileContentChanged += FileContentChanged;
+    }
+
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine($"#DEBUG: Updating text counts of the {CurrentFilePath} file.");
+        var buffer = ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(CurrentFilePath);
+
+        _characterCount = buffer.Counter.CharacterCount;
+        _wordCount = buffer.Counter.WordCount;
+        _lineCount = buffer.Counter.LineCount;
+    }
+
+    /// <summary>
+    /// Updates the UI values of the cursor position upon consuming a CursorPositionChange event.
+    /// </summary>
+    private async void CursorPositionChanged(object sender, CursorPositionChangeArgs args)
+    {
+        var buffer = ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(CurrentFilePath);
+        (_cursorLines, _cursorColumns) = buffer.ParseCursorPosition();
+
+        await InvokeAsync(() =>
+            base.StateHasChanged());
+    }
+
+    /// <summary>
+    /// Updates the text box content upon consuming a FileContentChange event.
+    /// </summary>
+    private async void FileContentChanged(object sender, FileContentChangeArgs args)
+    {
+        var buffer = ApplicationState.Instance.FileHandlerInstance.GetFileBuffer(CurrentFilePath);
+        _characterCount = buffer.Counter.CharacterCount;
+        _wordCount = buffer.Counter.WordCount;
+        _lineCount = buffer.Counter.LineCount;
+
+        await InvokeAsync(() =>
+            base.StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        CursorPositionService.OnCursorPositionChanged -= CursorPositionChanged;
+        FileContentService.OnFileContentChanged -= FileContentChanged;
+    }
+}
